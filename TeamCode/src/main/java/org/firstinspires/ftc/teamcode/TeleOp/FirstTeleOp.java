@@ -35,26 +35,13 @@ import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 
-
-/*
- * This file contains an example of an iterative (Non-Linear) "OpMode".
- * An OpMode is a 'program' that runs in either the autonomous or the teleop period of an FTC match.
- * The names of OpModes appear on the menu of the FTC Driver Station.
- * When a selection is made from the menu, the corresponding OpMode
- * class is instantiated on the Robot Controller and executed.
- *
- * This particular OpMode just executes a basic Tank Drive Teleop for a two wheeled robot
- * It includes all the skeletal structure that all iterative OpModes contain.
- *
- * Use Android Studio to Copy this Class, and Paste it into your team's code folder with a new name.
- * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list
- */
 
 @TeleOp(name="FirstTeleOp", group="Testing")
 public class FirstTeleOp extends OpMode
@@ -68,18 +55,24 @@ public class FirstTeleOp extends OpMode
 
     private DcMotorEx slideLeft1 = null;
     private DcMotorEx slideLeft2 = null;
-
     private DcMotorEx slideRight = null;
-
     private DcMotor pivot = null;
 
+    // Pivot PID stuff
+    double integralSum = 0;
+    double Kp = 0;
+    double Ki = 0;
+    double Kd = 0;
+    ElapsedTime timer = new ElapsedTime();
+    double lastError = 0;
 
 
-    //private IMU imu = null;
+    private Servo intake = null;
+    private Servo gearshift = null;
 
     private AnalogInput canandgyro = null;
-
     double zeroPoint = 0;
+
 
     /*
      * Code to run ONCE when the driver hits INIT
@@ -111,31 +104,14 @@ public class FirstTeleOp extends OpMode
         pivot  = hardwareMap.get(DcMotor.class, "p");
         pivot.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-
-        //imu = hardwareMap.get(IMU.class, "imu");
-
         canandgyro = hardwareMap.get(AnalogInput.class, "canandgyro");
 
-
-
-        backLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        backLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-
-        backRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        backRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        backLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        backRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        frontLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        frontRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         zeroPoint = canandgyro.getVoltage();
-        // Adjust the orientation parameters to match your robot
-        //IMU.Parameters parameters = new IMU.Parameters(new RevHubOrientationOnRobot(
-//                RevHubOrientationOnRobot.LogoFacingDirection.UP,
-//                RevHubOrientationOnRobot.UsbFacingDirection.FORWARD));
-        // Without this, the REV Hub's orientation is assumed to be logo up / USB forward
-        //imu.initialize(parameters);
-
-
-        // To drive forward, most robots need the motor on one side to be reversed, because the axles point in opposite directions.
-        // Pushing the left stick forward MUST make robot go forward. So adjust these two lines based on your first test drive.
-        // Note: The settings here assume direct drive on left and right wheels.  Gear Reduction or 90 Deg drives may require direction flips
 
         // Tell the driver that initialization is complete.
         telemetry.addData("Status", "Initialized");
@@ -153,8 +129,10 @@ public class FirstTeleOp extends OpMode
      * Code to run ONCE when the driver hits START
      */
     @Override
-    public void start() {
+    public void start()
+    {
         runtime.reset();
+        timer.reset();
     }
 
     /*
@@ -162,7 +140,6 @@ public class FirstTeleOp extends OpMode
      */
     @Override
     public void loop() {
-
 
         if(gamepad1.a)
         {
@@ -231,10 +208,7 @@ public class FirstTeleOp extends OpMode
         frontRight.setPower(frontRightPower);
         backRight.setPower(backRightPower);
 
-//        telemetry.addData("FL", frontLeftPower);
-//        telemetry.addData("FR", frontRightPower);
-//        telemetry.addData("BL", backLeftPower);
-//        telemetry.addData("BR", backRightPower);
+
         telemetry.addData("angle", botHeading*180/Math.PI);
         telemetry.addData("zero", zeroPoint);
         telemetry.addData("voltage", canandgyro.getVoltage());
@@ -257,5 +231,27 @@ public class FirstTeleOp extends OpMode
     public void stop() {
 
     }
+
+    public double PIDControl(double reference, double state)
+    {
+        double error = reference - state;
+        integralSum += error * timer.seconds();
+        double derivative = (error - lastError) / timer.seconds();
+        lastError = error;
+
+        timer.reset();
+
+        double output = (error*Kp) + (derivative*Kd) + (integralSum*Ki);
+        return output;
+
+    }
+
+    public void refreshState()
+    {
+
+    }
+
+
+
 
 }
