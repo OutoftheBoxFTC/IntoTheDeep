@@ -27,8 +27,19 @@ public class MeepMeepTesting {
 //                .build());
 
 
-        myBot.runAction(myBot.getDrive().actionBuilder(new Pose2d(0, -52, 0))
-                .splineTo(new Vector2d(48, 48), Math.toRadians(270))
+        myBot.runAction(myBot.getDrive().actionBuilder(new Pose2d(-35.6, -60.1, Math.toRadians(90)))
+                .setTangent(Math.toRadians(90))
+                .splineToConstantHeading(new Vector2d(-60, -36), Math.toRadians(90))
+                .waitSeconds(0.1)
+                .splineToConstantHeading(new Vector2d(-60,-50), Math.toRadians(90))
+                .waitSeconds(0.1)
+                .splineToConstantHeading(new Vector2d(-55.7, -36.1), Math.toRadians(90))
+                .waitSeconds(0.1)
+                .splineToConstantHeading(new Vector2d(-60,-50), Math.toRadians(90))
+                .waitSeconds(0.1)
+                .splineToConstantHeading(new Vector2d(-48, -36), Math.toRadians(90))
+                .waitSeconds(0.1)
+                .splineToConstantHeading(new Vector2d(-60,-50), Math.toRadians(90))
                 .build());
 
         meepMeep.setBackground(MeepMeep.Background.FIELD_INTO_THE_DEEP_OFFICIAL)
