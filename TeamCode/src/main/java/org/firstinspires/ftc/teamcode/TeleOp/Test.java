@@ -45,11 +45,12 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
+import org.firstinspires.ftc.teamcode.Controller;
 
 
-@TeleOp(name="FirstTeleOp", group="Testing")
+@TeleOp(name="Test", group="Testing")
 @Config
-public class FirstTeleOp extends OpMode
+public class Test extends OpMode
 {
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
@@ -116,6 +117,8 @@ public class FirstTeleOp extends OpMode
     FtcDashboard dashboard = null;
     Telemetry dashboardTelemetry = null;
 
+    Controller driver = null;
+
 
     /*
      * Code to run ONCE when the driver hits INIT
@@ -175,6 +178,8 @@ public class FirstTeleOp extends OpMode
 
         // Tell the driver that initialization is complete.
         telemetry.addData("Status", "Initialized");
+
+        driver = new Controller(gamepad1);
     }
 
     /*
@@ -201,143 +206,19 @@ public class FirstTeleOp extends OpMode
      */
     @Override
     public void loop() {
-        if(gamepad1.x)
+        if(driver.dpadUpOnce())
         {
-            IntakeState = true;
-            HighGoalState = false;
-            MidGoalState = false;
-            InitialState = false;
+            intakeRotatePos += .05;
         }
-        if(gamepad1.y)
+        if(driver.dpadDownOnce())
         {
-            IntakeState = false;
-            HighGoalState = false;
-            MidGoalState = false;
-            InitialState = true;
-        }
-        if(gamepad1.a)
-        {
-            IntakeState = false;
-            HighGoalState = true;
-            MidGoalState = false;
-            InitialState = false;
-        }
-        if(gamepad1.b)
-        {
-            IntakeState = false;
-            HighGoalState = false;
-            MidGoalState = true;
-            InitialState = false;
+            intakeRotatePos -= .05;
         }
 
-        pivot.setPower(PivotPIDControl(pivotTarget,backRight.getCurrentPosition()));
-
-        if(backRight.getCurrentPosition() > 500)
-            setSlidePower(SlideUpPIDControl(slidesTarget,backLeft.getCurrentPosition()));
-        else
-            setSlidePower(SlideDownPIDControl(slidesTarget,backLeft.getCurrentPosition()));
-
-
-        if(HighGoalState)
-        {
-            pivotTarget = 800;
-            if(backRight.getCurrentPosition() > 500)
-            {
-                slidesTarget = -28700;
-            }
-            intakeRotatePos = .35;
-            if(gamepad1.right_trigger > 0.1)
-                intake.setPower(-1);
-            else
-                intake.setPower(0);
-        }
-        if(MidGoalState)
-        {
-            pivotTarget = 800;
-            if(backRight.getCurrentPosition() > 500)
-            {
-                slidesTarget = -3453;
-            }
-            intakeRotatePos = .35;
-        }
-        if(IntakeState)
-        {
-            pivotTarget = 0;
-            slidesTarget = -18365;
-            if(gamepad1.right_trigger > 0.1)
-            {
-                intake.setPower(1);
-                intakeRotatePos = .1;
-            }
-            else
-            {
-                intake.setPower(0);
-                intakeRotatePos = 0.25;
-            }
-        }
-        if(InitialState)
-        {
-            pivotTarget = 0;
-            slidesTarget = 0;
-            if(backRight.getCurrentPosition() < 500)
-                intakeRotatePos = 1;
-            intake.setPower(0);
-        }
-
-        // Show the elapsed game time and wheel power.
-        telemetry.addData("Status", "Run Time: " + runtime.toString());
-
-
-        double y = -gamepad1.left_stick_y; // Remember, Y stick value is reversed
-        double x = gamepad1.left_stick_x;
-        double rx = gamepad1.right_stick_x;
-
-        double botHeading = 2*AngleUnit.normalizeRadians(canandgyro.getVoltage() - zeroPoint);;
-
-        // Rotate the movement direction counter to the bot's rotation
-        double rotX = x * Math.cos(-botHeading) - y * Math.sin(-botHeading);
-        double rotY = x * Math.sin(-botHeading) + y * Math.cos(-botHeading);
-
-        rotX = rotX * 1.1;  // Counteract imperfect strafing
-
-        // Denominator is the largest motor power (absolute value) or 1
-        // This ensures all the powers maintain the same ratio,
-        // but only if at least one is out of the range [-1, 1]
-        double denominator = Math.max(Math.abs(rotY) + Math.abs(rotX) + Math.abs(rx), 1);
-        double frontLeftPower = (rotY + rotX + rx) / denominator;
-        double backLeftPower = (rotY - rotX + rx) / denominator;
-        double frontRightPower = (rotY - rotX - rx) / denominator;
-        double backRightPower = (rotY + rotX - rx) / denominator;
-
-        if(gamepad1.left_bumper) {
-            frontLeft.setPower(frontLeftPower*slowModeModifier);
-            backLeft.setPower(backLeftPower*slowModeModifier);
-            frontRight.setPower(frontRightPower*slowModeModifier);
-            backRight.setPower(backRightPower*slowModeModifier);
-        }
-        else {
-            frontLeft.setPower(frontLeftPower);
-            backLeft.setPower(backLeftPower);
-            frontRight.setPower(frontRightPower);
-            backRight.setPower(backRightPower);
-        }
-
+        driver.update();
         intakeRotate.setPosition(intakeRotatePos);
-        telemetry.addData("intakeArm",intakeRotatePos);
 
-
-        telemetry.addData("slide PID encoder",backLeft.getCurrentPosition());
-        telemetry.addData("pivot encoder",backRight.getCurrentPosition());
-        telemetry.addData("intakeRotate",intakeRotate.getPosition());
-        telemetry.addData("pivotTarget",pivotTarget);
-        telemetry.addData("pivotCurrent",pivot.getCurrent(CurrentUnit.AMPS));
-
-        telemetry.update();
-        dashboard.getTelemetry();
-
-        dashboardTelemetry.addData("error",pivotLastError);
-        dashboardTelemetry.addData("reference",pivotTarget);
-
+        telemetry.addData("intakeRotatePos", intakeRotatePos);
 
 
     }
