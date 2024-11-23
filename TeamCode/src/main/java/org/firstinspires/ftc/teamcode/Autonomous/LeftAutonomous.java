@@ -22,6 +22,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 @Config
 @Autonomous(name = "BLUE_TEST_AUTO_PIXEL", group = "Autonomous")
 public class LeftAutonomous extends LinearOpMode {
+
     public class Lift {
         private DcMotorEx lift;
 
@@ -112,6 +113,7 @@ public class LeftAutonomous extends LinearOpMode {
 
     @Override
     public void runOpMode() {
+
         Pose2d initialPose = new Pose2d(11.8, 61.7, Math.toRadians(90));
         MecanumDrive drive = new MecanumDrive(hardwareMap, initialPose);
         Claw claw = new Claw(hardwareMap);
@@ -165,6 +167,7 @@ public class LeftAutonomous extends LinearOpMode {
 
         if (isStopRequested()) return;
 
+
         Action trajectoryActionChosen;
         if (startPosition == 1) {
             trajectoryActionChosen = tab1.build();
@@ -174,14 +177,15 @@ public class LeftAutonomous extends LinearOpMode {
             trajectoryActionChosen = tab3.build();
         }
 
-        Actions.runBlocking(
-                new SequentialAction(
-                        trajectoryActionChosen,
-                        lift.liftUp(),
-                        claw.openClaw(),
-                        lift.liftDown(),
-                        trajectoryActionCloseOut
-                )
-        );
+//        Actions.runBlocking(
+//                new SequentialAction(
+//                        trajectoryActionChosen,
+//                        lift.liftUp(),
+//                        claw.openClaw(),
+//                        lift.liftDown(),
+//                        trajectoryActionCloseOut
+//                )
+//        );
+
     }
 }

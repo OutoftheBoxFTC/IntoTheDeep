@@ -32,6 +32,7 @@ import com.acmerobotics.roadrunner.ftc.PositionVelocityPair;
 import com.acmerobotics.roadrunner.ftc.RawEncoder;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
+import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -40,7 +41,6 @@ import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 import org.firstinspires.ftc.teamcode.messages.DriveCommandMessage;
 import org.firstinspires.ftc.teamcode.messages.MecanumCommandMessage;
 import org.firstinspires.ftc.teamcode.messages.MecanumLocalizerInputsMessage;
@@ -53,6 +53,7 @@ import java.util.List;
 
 @Config
 public final class MecanumDrive {
+    public double zeroPoint;
     public static class Params {
         // IMU orientation
         // TODO: fill in these values based on
@@ -65,12 +66,12 @@ public final class MecanumDrive {
         // drive model parameters
         public double inPerTick = 0.001964475731;
         public double lateralInPerTick = 0.0013403745012766474;
-        public double trackWidthTicks = 6977.734225758381;
+        public double trackWidthTicks = 1.3921515546446135;
 
         // feedforward parameters (in tick units)
         public double kS = 1.5306487284998531;
         public double kV = 0.0002544336358504152;
-        public double kA = 0.000001;
+        public double kA = 0.00001;
 
 
         // path profile parameters (in inches)
@@ -83,13 +84,14 @@ public final class MecanumDrive {
         public double maxAngAccel = Math.PI;
 
         // path controller gains
-        public double axialGain = 0.0;
-        public double lateralGain = 0.0;
-        public double headingGain = 0.0; // shared with turn
+        public double axialGain = 3;
+        public double lateralGain = 4;
+        public double headingGain = 16000; // shared with turn
 
         public double axialVelGain = 0.0;
         public double lateralVelGain = 0.0;
         public double headingVelGain = 0.0; // shared with turn
+
     }
 
     public static Params PARAMS = new Params();
@@ -112,6 +114,8 @@ public final class MecanumDrive {
     public final VoltageSensor voltageSensor;
 
     public final LazyImu lazyImu;
+    public AnalogInput canandgyro;
+
 
     public final Localizer localizer;
     public Pose2d pose;
@@ -150,12 +154,7 @@ public final class MecanumDrive {
             PositionVelocityPair rightBackPosVel = rightBack.getPositionAndVelocity();
             PositionVelocityPair rightFrontPosVel = rightFront.getPositionAndVelocity();
 
-            YawPitchRollAngles angles = imu.getRobotYawPitchRollAngles();
-
-            FlightRecorder.write("MECANUM_LOCALIZER_INPUTS", new MecanumLocalizerInputsMessage(
-                    leftFrontPosVel, leftBackPosVel, rightBackPosVel, rightFrontPosVel, angles));
-
-            Rotation2d heading = Rotation2d.exp(angles.getYaw(AngleUnit.RADIANS));
+            Rotation2d heading = Rotation2d.exp(Math.toDegrees(canandgyro.getVoltage()-zeroPoint));
 
             if (!initialized) {
                 initialized = true;
@@ -239,6 +238,10 @@ public final class MecanumDrive {
         //   see https://ftc-docs.firstinspires.org/en/latest/hardware_and_software_configuration/configuring/index.html
         lazyImu = new LazyImu(hardwareMap, "imu", new RevHubOrientationOnRobot(
                 PARAMS.logoFacingDirection, PARAMS.usbFacingDirection));
+        canandgyro = hardwareMap.get(AnalogInput.class, "canandgyro");
+
+        zeroPoint = canandgyro.getVoltage();
+
 
         voltageSensor = hardwareMap.voltageSensor.iterator().next();
 
