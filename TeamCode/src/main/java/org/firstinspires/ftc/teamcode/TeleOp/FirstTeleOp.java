@@ -38,6 +38,7 @@ import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -58,50 +59,68 @@ public class FirstTeleOp extends OpMode
     private DcMotor backRight = null;
     private DcMotor backLeft = null;
 
-    private double slowModeModifier = 0.7;
+    private double slowModeModifier = 0.35;
 
     private DcMotorEx slideLeft1 = null;
     private DcMotorEx slideLeft2 = null;
     private DcMotorEx slideRight = null;
     private DcMotorEx pivot = null;
 
+    private DigitalChannel limitSwitch = null;
     // Pivot PID stuff
     double pivotIntegralSum = 0;
-    public static double Kp = 0.002;
-    public static double Ki = 0;
-    public static double Kd = 0;
-    public static double Kf = 0.2;
+    public double Kp = 0.002;
+    public double Ki = 0;
+    public double Kd = 0;
+    public double Kf = 0.2;
     ElapsedTime pivotTimer = new ElapsedTime();
-    public static double pivotLastError = 0;
+    public double pivotLastError = 0;
 
     // Slide PID DOWN
     double downSlideIntegralSum = 0;
-    public static double downSlideKp = 0.0001;
-    public static double downSlideKi = 0;
-    public static double downSlideKd = 0;
+    public double downSlideKp = 0.0001;
+    public double downSlideKi = 0;
+    public double downSlideKd = 0;
     ElapsedTime downSlideTimer = new ElapsedTime();
-    public static double downSlideLastError = 0;
+    public double downSlideLastError = 0;
 
     // Slide PID UP
     double upSlideIntegralSum = 0;
-    public static double upSlideKp = 0.0001;
-    public static double upSlideKi = 0;
-    public static double upSlideKd = 0;
-    public static double upSlideKf = -0.2;
+    public double upSlideKp = 0.0001;
+    public double upSlideKi = 0;
+    public double upSlideKd = 0;
+    public double upSlideKf = -0.2;
     ElapsedTime upSlideTimer = new ElapsedTime();
-    public static double upSlideLastError = 0;
+    public double upSlideLastError = 0;
 
 
+    // States
     public boolean HighGoalState = false;
     public boolean MidGoalState = false;
     public boolean IntakeState = false;
     public boolean InitialState = true;
+    public boolean SpecimenState = false;
+    public boolean transitionToIntake = true;
+    public boolean hangState = false;
+
+    // values
+    public static int slidesHigh = -26000;
+    public static int pivotScore = 800;
+    public static double intakeRotateScore = 0.35;
+
+    public static int pivotSpecimen = 500;
+    public static double rotatePosSpecimen = 0.3;
+    public static int slidesTargetSpecimen = -8000;
+    public static int slidesTargetSpecimenAfter = -15000;
 
 
+    private int error = 0;
+    private boolean pressedLast = false;
 
     private CRServo intake = null;
     private Servo intakeRotate = null;
     private Servo gearshift = null;
+    private AnalogInput gearpos = null;
 
     private AnalogInput canandgyro = null;
     double zeroPoint = 0;
@@ -115,6 +134,11 @@ public class FirstTeleOp extends OpMode
 
     FtcDashboard dashboard = null;
     Telemetry dashboardTelemetry = null;
+
+    private boolean isShifting = false;
+    public static double neutral = .77;
+    public static double lowGear = 0.68;
+    public static double highGear =1;
 
 
     /*
@@ -156,6 +180,7 @@ public class FirstTeleOp extends OpMode
 
         canandgyro = hardwareMap.get(AnalogInput.class, "canandgyro");
 
+        limitSwitch = hardwareMap.get(DigitalChannel.class, "limitSwitch");
 
         backLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         backRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -172,6 +197,10 @@ public class FirstTeleOp extends OpMode
 
         intake = hardwareMap.get(CRServo.class, "intake");
         intakeRotate = hardwareMap.get(Servo.class, "intakeRotate");
+        gearshift = hardwareMap.get(Servo.class, "gearShift");
+
+        gearpos = hardwareMap.get(AnalogInput.class, "gearpos");
+
 
         // Tell the driver that initialization is complete.
         telemetry.addData("Status", "Initialized");
@@ -201,79 +230,157 @@ public class FirstTeleOp extends OpMode
      */
     @Override
     public void loop() {
-        if(gamepad1.x)
+
+
+        if (limitSwitch.getState() && !pressedLast)
+        {
+            error = backLeft.getCurrentPosition();
+            pressedLast = true;
+        }
+        if(!limitSwitch.getState())
+        {
+            pressedLast = false;
+        }
+
+
+        if((gamepad2.left_trigger > .1) && !hangState) // gamepad2 left trigger
         {
             IntakeState = true;
             HighGoalState = false;
             MidGoalState = false;
             InitialState = false;
+            SpecimenState = false;
+            hangState = false;
         }
-        if(gamepad1.y)
+        if(gamepad2.left_bumper) // gamepad2 left bumper
         {
             IntakeState = false;
             HighGoalState = false;
             MidGoalState = false;
             InitialState = true;
+            transitionToIntake = true;
+            SpecimenState = false;
+            hangState = false;
         }
-        if(gamepad1.a)
+        if(gamepad2.right_trigger > 0.1 && !hangState) // gamepad2 right trigger one press
         {
             IntakeState = false;
             HighGoalState = true;
             MidGoalState = false;
             InitialState = false;
+            transitionToIntake = true;
+            SpecimenState = false;
+            hangState = false;
         }
-        if(gamepad1.b)
+        if(gamepad2.right_bumper) // gamepad2 right bumper
         {
             IntakeState = false;
             HighGoalState = false;
             MidGoalState = true;
             InitialState = false;
+            transitionToIntake = true;
+            SpecimenState = false;
+            hangState = false;
+        }
+        if(gamepad2.y) // specimen: gamepad2 y
+        {
+            IntakeState = false;
+            HighGoalState = false;
+            MidGoalState = false;
+            InitialState = false;
+            transitionToIntake = true;
+            SpecimenState = true;
+            hangState = false;
+
+        }
+        if(gamepad2.a) {
+            IntakeState = false;
+            HighGoalState = false;
+            MidGoalState = false;
+            InitialState = false;
+            transitionToIntake = false;
+            SpecimenState = false;
+            hangState = true;
         }
 
         pivot.setPower(PivotPIDControl(pivotTarget,backRight.getCurrentPosition()));
 
-        if(backRight.getCurrentPosition() > 500)
-            setSlidePower(SlideUpPIDControl(slidesTarget,backLeft.getCurrentPosition()));
-        else
-            setSlidePower(SlideDownPIDControl(slidesTarget,backLeft.getCurrentPosition()));
-
+        if(!hangState) {
+            if (backRight.getCurrentPosition() > 500)
+                setSlidePower(SlideUpPIDControl(slidesTarget, getSlidesPosition()));
+            else
+                setSlidePower(SlideDownPIDControl(slidesTarget, getSlidesPosition()));
+        }
 
         if(HighGoalState)
         {
-            pivotTarget = 800;
+            pivotTarget = pivotScore;
             if(backRight.getCurrentPosition() > 500)
             {
-                slidesTarget = -28700;
+                slidesTarget = slidesHigh;
             }
-            intakeRotatePos = .35;
+            intakeRotatePos = intakeRotateScore;
+            if(gamepad1.right_trigger > 0.1)
+                intake.setPower(-1);
+            else
+                intake.setPower(0);
+
+        }
+        if(MidGoalState)
+        {
+            pivotTarget = pivotScore;
+            if(backRight.getCurrentPosition() > 500)
+            {
+                slidesTarget = -3453;
+            }
+            intakeRotatePos = intakeRotateScore;
             if(gamepad1.right_trigger > 0.1)
                 intake.setPower(-1);
             else
                 intake.setPower(0);
         }
-        if(MidGoalState)
-        {
-            pivotTarget = 800;
-            if(backRight.getCurrentPosition() > 500)
-            {
-                slidesTarget = -3453;
-            }
-            intakeRotatePos = .35;
-        }
         if(IntakeState)
         {
             pivotTarget = 0;
-            slidesTarget = -18365;
-            if(gamepad1.right_trigger > 0.1)
+            if(transitionToIntake) {
+                slidesTarget = -1000;
+                transitionToIntake = false;
+            }
+            // right trigger extend, left trigger retract
+            // right button intake
+            if(gamepad1.left_bumper) {
+                if (gamepad1.right_trigger > 0.1) {
+                    slidesTarget -= 600;
+                } else if (gamepad1.left_trigger > 0.1) {
+                    slidesTarget += 600;
+                }
+            } else
+            {
+                if (gamepad1.right_trigger > 0.1) {
+                    slidesTarget -= 1000;
+                } else if (gamepad1.left_trigger > 0.1) {
+                    slidesTarget += 1000;
+                }
+            }
+            if(gamepad1.right_bumper)
             {
                 intake.setPower(1);
-                intakeRotatePos = .1;
+                intakeRotatePos = (1.184*Math.pow(10,-10))*(Math.pow(getSlidesPosition(),2)) + (7.237*Math.pow(10,-8))*getSlidesPosition()+0.055;
             }
             else
             {
                 intake.setPower(0);
                 intakeRotatePos = 0.25;
             }
+            if(slidesTarget < -18500)
+            {
+                slidesTarget = -18500;
+            }
+            if(slidesTarget > 0)
+            {
+                slidesTarget = 0;
+            }
+
         }
         if(InitialState)
         {
@@ -282,6 +389,44 @@ public class FirstTeleOp extends OpMode
             if(backRight.getCurrentPosition() < 500)
                 intakeRotatePos = 1;
             intake.setPower(0);
+        }
+
+        if(SpecimenState)
+        {
+            intakeRotatePos = rotatePosSpecimen;
+            pivotTarget = pivotSpecimen;
+            if(gamepad1.right_trigger > 0.1)
+            {
+                intake.setPower(-1);
+            }
+            else {
+                intake.setPower(0);
+            }
+            if(gamepad1.left_trigger > 0.1)
+            {
+                slidesTarget = slidesTargetSpecimenAfter;
+            }
+            else {
+                slidesTarget = slidesTargetSpecimen;
+            }
+        }
+        if(hangState)
+        {
+            gearshift.setPosition(lowGear);
+            if(gearpos.getVoltage() > 1.2 && gearpos.getVoltage() < 1.38)
+            {
+                setSlidePower(-.4);
+            }
+            else {
+                if (gamepad2.right_trigger > 0.1) {
+                    setSlidePower(-1);
+                } else if (gamepad2.left_trigger > 0.1) {
+                    setSlidePower(1);
+                } else {
+                    setSlidePower(0);
+                }
+            }
+
         }
 
         // Show the elapsed game time and wheel power.
@@ -326,19 +471,14 @@ public class FirstTeleOp extends OpMode
         telemetry.addData("intakeArm",intakeRotatePos);
 
 
-        telemetry.addData("slide PID encoder",backLeft.getCurrentPosition());
+        telemetry.addData("slide PID encoder",getSlidesPosition());
         telemetry.addData("pivot encoder",backRight.getCurrentPosition());
-        telemetry.addData("intakeRotate",intakeRotate.getPosition());
-        telemetry.addData("pivotTarget",pivotTarget);
-        telemetry.addData("pivotCurrent",pivot.getCurrent(CurrentUnit.AMPS));
+        telemetry.addData("error",error);
 
         telemetry.update();
         dashboard.getTelemetry();
 
-        dashboardTelemetry.addData("error",pivotLastError);
-        dashboardTelemetry.addData("reference",pivotTarget);
-
-
+        dashboardTelemetry.addData("error",error);
 
     }
 
@@ -400,5 +540,9 @@ public class FirstTeleOp extends OpMode
 
     }
 
+    public int getSlidesPosition()
+    {
+        return backLeft.getCurrentPosition() - error;
+    }
 
 }

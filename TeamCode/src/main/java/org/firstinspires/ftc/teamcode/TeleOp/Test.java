@@ -105,6 +105,8 @@ public class Test extends OpMode
     private Servo gearshift = null;
 
     private AnalogInput canandgyro = null;
+
+    private AnalogInput gearpos = null;
     double zeroPoint = 0;
 
     public static int pivotTarget = 0;
@@ -119,6 +121,7 @@ public class Test extends OpMode
 
     Controller driver = null;
 
+    public static double gearShiftTarget = 0;
 
     /*
      * Code to run ONCE when the driver hits INIT
@@ -180,6 +183,9 @@ public class Test extends OpMode
         telemetry.addData("Status", "Initialized");
 
         driver = new Controller(gamepad1);
+
+        gearshift = hardwareMap.get(Servo.class, "gearShift");
+        gearpos = hardwareMap.get(AnalogInput.class, "gearpos");
     }
 
     /*
@@ -206,6 +212,10 @@ public class Test extends OpMode
      */
     @Override
     public void loop() {
+
+        gearshift.setPosition(gearShiftTarget);
+
+
         if(driver.dpadUpOnce())
         {
             intakeRotatePos += .05;
@@ -219,7 +229,7 @@ public class Test extends OpMode
         intakeRotate.setPosition(intakeRotatePos);
 
         telemetry.addData("intakeRotatePos", intakeRotatePos);
-
+        telemetry.addData("gearshift", gearpos.getVoltage());
 
     }
 
