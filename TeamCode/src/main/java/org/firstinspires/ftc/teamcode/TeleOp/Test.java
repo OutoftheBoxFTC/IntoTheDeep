@@ -214,7 +214,7 @@ public class Test extends OpMode
     public void loop() {
 
         gearshift.setPosition(gearShiftTarget);
-
+        intake.setPower(.3);
 
         if(driver.dpadUpOnce())
         {

@@ -38,6 +38,8 @@ public class AutonomousTest extends LinearOpMode {
 
         backLeft = hardwareMap.get(DcMotorEx.class, "bl");
         backLeft.setDirection(DcMotorSimple.Direction.REVERSE);
+        backLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        backLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
 
         Pose2d currentPose = null;
@@ -74,16 +76,21 @@ public class AutonomousTest extends LinearOpMode {
                 ;
 
         TrajectoryActionBuilder two = one.endTrajectory().fresh()
-                .strafeTo(new Vector2d(-16.26, 0)) // back up
-                .strafeToLinearHeading(new Vector2d(-26.3, 16.7), Math.toRadians(118.1)) // move forward to first sample pickup
+                .strafeTo(new Vector2d(-23, 0)) // back up (prev: 16.26)
                 ;
 
-        TrajectoryActionBuilder three = two.endTrajectory().fresh()
+        TrajectoryActionBuilder twohalf = two.endTrajectory().fresh()
+                .strafeTo(new Vector2d(-16.26, 0)) // back up (prev: 16.26)
+                .strafeToLinearHeading(new Vector2d(-26.3, 16.7), Math.toRadians(125.1)) // move forward to first sample pickup
+                ;
+
+
+        TrajectoryActionBuilder three = twohalf.endTrajectory().fresh()
                 .strafeToLinearHeading(new Vector2d(-16.9, 24.2),Math.toRadians(45.6)) // deliver first sample
                 ;
 
         TrajectoryActionBuilder four = three.endTrajectory().fresh()
-                .strafeToLinearHeading(new Vector2d(-26.8,27.3), Math.toRadians(118.4)) // pickup second
+                .strafeToLinearHeading(new Vector2d(-26.8,27.3), Math.toRadians(123.4)) // pickup second
                 ;
 
         TrajectoryActionBuilder five = four.endTrajectory().fresh()
@@ -99,25 +106,36 @@ public class AutonomousTest extends LinearOpMode {
                 ;
 
         TrajectoryActionBuilder eight = seven.endTrajectory().fresh()
-                .strafeToLinearHeading(new Vector2d(-8.3, 28), Math.toRadians(0))
+                .strafeToLinearHeading(new Vector2d(-6.5, 28), Math.toRadians(0))
                 ;
 
         TrajectoryActionBuilder nine = eight.endTrajectory().fresh()
                 .strafeToLinearHeading(new Vector2d(-27, -1.9), Math.toRadians(0))
                 ;
-        TrajectoryActionBuilder ten = nine.endTrajectory().fresh()
-                .strafeToLinearHeading(new Vector2d(-8.3, 28), Math.toRadians(0))
+
+        TrajectoryActionBuilder ninehalf = nine.endTrajectory().fresh()
+                .strafeTo(new Vector2d(-23, 0)) // back up (prev: 16.26)
+                ;
+        TrajectoryActionBuilder ten = ninehalf.endTrajectory().fresh()
+                .strafeToLinearHeading(new Vector2d(-6.5, 28), Math.toRadians(0))
                 ;
 
         TrajectoryActionBuilder eleven = ten.endTrajectory().fresh()
                 .strafeToLinearHeading(new Vector2d(-27, -1.9), Math.toRadians(0))
                 ;
-        TrajectoryActionBuilder twelve = eleven.endTrajectory().fresh()
-                .strafeToLinearHeading(new Vector2d(-8.3, 28), Math.toRadians(0))
+        TrajectoryActionBuilder elevenhalf = ten.endTrajectory().fresh()
+                .strafeTo(new Vector2d(-23, 0)) // back up (prev: 16.26)
+                ;
+        TrajectoryActionBuilder twelve = elevenhalf.endTrajectory().fresh()
+                .strafeToLinearHeading(new Vector2d(-6.5, 28), Math.toRadians(0))
                 ;
 
         TrajectoryActionBuilder thirteen = twelve.endTrajectory().fresh()
                 .strafeToLinearHeading(new Vector2d(-27, -1.9), Math.toRadians(0))
+                ;
+
+        TrajectoryActionBuilder thirteenhalf = thirteen.endTrajectory().fresh()
+                .strafeTo(new Vector2d(-23, 0)) // back up (prev: 16.26)
                 ;
 
         TrajectoryActionBuilder fourteen = thirteen.endTrajectory().fresh()
@@ -132,6 +150,7 @@ public class AutonomousTest extends LinearOpMode {
         Action trajectoryActionChosen = finalTraj.build();
         Action trajOne = one.build();
         Action trajTwo = two.build();
+        Action trajTwoHalf = twohalf.build();
         Action trajThree = three.build();
         Action trajFour = four.build();
         Action trajFive = five.build();
@@ -139,10 +158,13 @@ public class AutonomousTest extends LinearOpMode {
         Action trajSeven = seven.build();
         Action trajEight = eight.build();
         Action trajNine = nine.build();
+        Action trajNineHalf = ninehalf.build();
         Action trajTen = ten.build();
         Action trajEleven = eleven.build();
+        Action trajElevenHalf = elevenhalf.build();
         Action trajTwelve = twelve.build();
         Action trajThirteen = thirteen.build();
+        Action trajThirteenHalf = thirteenhalf.build();
         Action trajFourteen = fourteen.build();
 
 
@@ -159,39 +181,66 @@ public class AutonomousTest extends LinearOpMode {
 
         Actions.runBlocking(
                 new SequentialAction(
-                        trajOne,
-                        robot.initializeOuttake(),
-                        trajTwo,
-                        robot.extendSlidesBetter(-14000, 1, false),
-                        robot.extendSlidesBetter(-18000, 0.6, true),
-                        robot.intake(),
-                        robot.retractSlides(),
-                        trajThree,
-                        robot.extendSlides(),
+                        trajOne, // specimen score
+                        robot.setIntakeRotate(1),
+                        robot.movePivotUp(),
+                        robot.setIntakeRotate(.45),
+                        robot.startIntakeSlow(),
+                        trajTwo, // backup a bit
+                        robot.startOuttake(),
+                        trajTwoHalf,
+                        robot.movePivotDown(),
+                        robot.startIntake(),
+                        robot.extendSlidesPower(-13000, -0.5),
+                        robot.extendSlidesPower(-15000, -0.35),
+                        robot.stopIntake(),
+                        trajThree, // deliver first block
+                        robot.extendSlidesPower(-18000, -1),
                         robot.outtake(),
-                        robot.retractSlides(),
-                        trajFour,
-                        robot.extendSlides(),
-                        robot.intake(),
-                        robot.retractSlides(),
-                        trajFive,
-                        robot.extendSlides(),
+                        robot.retractSlidesPower(-13000, 1),
+                        trajFour, // pickup second block
+                        robot.startIntake(),
+                        robot.extendSlidesPower(-15000, -0.4),
+                        robot.stopIntake(),
+                        trajFive, // deliver second block
                         robot.outtake(),
-                        robot.retractSlides(),
-                        trajSix,
-                        robot.extendSlides(),
-                        robot.intake(),
-                        robot.retractSlides(),
-                        trajSeven,
-                        robot.extendSlides(),
+                        robot.retractSlidesPower(-13000, 1),
+                        trajSix, // pickup third block
+                        robot.startIntake(),
+                        robot.extendSlidesPower(-15000, -0.4),
+                        robot.stopIntake(),
+                        robot.retractSlidesPower(-13000, 1),
+                        trajSeven, // deliver third block
+                        robot.extendSlidesPower(-15000, -1),
                         robot.outtake(),
-                        robot.retractSlides(),
-                        trajEight,
-                        trajNine,
-                        trajTen,
-                        trajEleven,
-                        trajTwelve,
-                        trajThirteen,
+                        robot.retractSlidesPower(-200, 1),
+                        robot.setIntakeRotate(0.58),
+                        robot.startIntake(),
+                        trajEight, // pickup first specimen
+                        robot.movePivotUp(),
+                        trajNine, // deliver first specimen
+                        robot.stopIntake(),
+                        robot.setIntakeRotate(1),
+                        robot.setIntakeRotate(.45),
+                        robot.startIntakeSlow(),
+                        trajNineHalf,
+                        robot.startOuttake(),
+                        trajTen, // pickup second specimen
+                        trajEleven, // deliver second specimen
+                        robot.stopIntake(),
+                        robot.setIntakeRotate(1),
+                        robot.setIntakeRotate(.45),
+                        robot.startIntakeSlow(),
+                        trajElevenHalf,
+                        robot.startOuttake(),
+                        trajTwelve, // pickup third specimen
+                        trajThirteen, // deliver third specimen
+                        robot.stopIntake(),
+                        robot.setIntakeRotate(1),
+                        robot.setIntakeRotate(.45),
+                        robot.startIntakeSlow(),
+                        trajThirteenHalf,
+                        robot.startOuttake(),
                         trajFourteen
                 )
         );
@@ -354,28 +403,6 @@ public class AutonomousTest extends LinearOpMode {
             return backLeft.getCurrentPosition();
         }
 
-
-        public class ExtendSlides implements Action {
-
-            @Override
-            public boolean run(@NonNull TelemetryPacket packet) {
-                intake.setPower(1);
-                intakeRotate.setPosition((1.184 * Math.pow(10, -10)) * (Math.pow(getSlidesPosition(), 2)) + (7.237 * Math.pow(10, -8)) * getSlidesPosition() + 0.055);
-                if(backLeft.getCurrentPosition() > -10000)
-                    setSlidePower(SlideDownPIDControl(-18500, backLeft.getCurrentPosition()));
-                else
-                    setSlidePower(0.2*SlideDownPIDControl(-18500, backLeft.getCurrentPosition()));
-                if(backLeft.getCurrentPosition() > -17000)
-                    return true;
-                else {
-                    intake.setPower(0);
-                    setSlidePower(0);
-                    return false;
-                }
-            }
-
-        }
-
         public class ExtendSlidesBetter implements Action
         {
             private int target;
@@ -417,26 +444,28 @@ public class AutonomousTest extends LinearOpMode {
             return new ExtendSlidesBetter(target, mult, f);
         }
 
-        public Action extendSlides()
-        {
-            return new ExtendSlides();
-        }
-
-        public class RetractSlides implements Action {
+        public class RetractSlidesBetter implements Action {
+            private int target;
+            public RetractSlidesBetter(int target)
+            {
+                this.target = target;
+            }
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
-                setSlidePower(SlideDownPIDControl(0, backLeft.getCurrentPosition()));
-                if(backLeft.getCurrentPosition() < -1000)
+                if(backLeft.getCurrentPosition() < target)
+                {
+                    setSlidePower(SlideDownPIDControl(target, backLeft.getCurrentPosition()));
                     return true;
+                }
                 else {
                     setSlidePower(0);
                     return false;
                 }
             }
         }
-        public Action retractSlides()
+        public Action retractSlidesBetter(int target)
         {
-            return new RetractSlides();
+            return new RetractSlidesBetter(target);
         }
 
         public class Intake implements Action
@@ -466,6 +495,33 @@ public class AutonomousTest extends LinearOpMode {
             return new Intake();
         }
 
+        public class startIntake implements Action {
+            @Override
+            public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+                intake.setPower(1);
+                return false;
+            }
+        }
+
+        public Action startIntake()
+        {
+            return new startIntake();
+        }
+
+        public class stopIntake implements Action
+        {
+            @Override
+            public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+                intake.setPower(0);
+                return false;
+            }
+        }
+
+        public Action stopIntake()
+        {
+            return new stopIntake();
+        }
+
         public class Outtake implements Action
         {
             private ElapsedTime timer = null;
@@ -478,7 +534,7 @@ public class AutonomousTest extends LinearOpMode {
                     initialized = true;
                 }
 
-                if(timer.milliseconds() < 100)
+                if(timer.milliseconds() < 400)
                     return true;
                 else {
                     intake.setPower(0);
@@ -506,7 +562,167 @@ public class AutonomousTest extends LinearOpMode {
             return new InitializeIntake();
         }
 
+//        public class goToSpecimenState implements Action
+//        {
+//            @Override
+//            public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+//                if(backRight.getCurrentPosition() < 400)
+//                {
+//                    pivot.setPower(PivotPIDControl(400, backRight.getCurrentPosition()));
+//                }
+//
+//            }
+//        }
 
+        public class extendSlidesPower implements Action {
+            private int target;
+            private double power;
+            public extendSlidesPower(int target, double power)
+            {
+                this.target = target;
+                this.power = power;
+            }
+            @Override
+            public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+                if(backLeft.getCurrentPosition() > target)
+                {
+                    intakeRotate.setPosition((1.184 * Math.pow(10, -10)) * (Math.pow(getSlidesPosition(), 2)) + (7.237 * Math.pow(10, -8)) * getSlidesPosition() + 0.055);
+                    setSlidePower(power);
+                    return true;
+                }
+                else
+                {
+                    setSlidePower(0);
+                    return false;
+                }
+            }
+        }
+
+        public Action extendSlidesPower(int target, double power)
+        {
+            return new extendSlidesPower(target, power);
+        }
+
+
+        public class retractSlidesPower implements Action {
+            private int target;
+            private double power;
+            public retractSlidesPower(int target, double power)
+            {
+                this.target = target;
+                this.power = power;
+            }
+            @Override
+            public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+                if(backLeft.getCurrentPosition() < target)
+                {
+                    setSlidePower(power);
+                    return true;
+                }
+                else
+                {
+                    setSlidePower(0);
+                    return false;
+                }
+            }
+        }
+
+        public Action retractSlidesPower(int target, double power)
+        {
+            return new retractSlidesPower(target, power);
+        }
+
+        public class movePivotUp implements Action
+        {
+            @Override
+            public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+                if(backRight.getCurrentPosition() < 800)
+                {
+                    pivot.setPower(PivotPIDControl(800,backRight.getCurrentPosition()));
+                    return true;
+                }
+                else
+                {
+                    pivot.setPower(0);
+                    return false;
+                }
+            }
+        }
+
+        public Action movePivotUp()
+        {
+            return new movePivotUp();
+        }
+
+        public class movePivotDown implements Action
+        {
+            @Override
+            public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+                if(backRight.getCurrentPosition() > 100)
+                {
+                    pivot.setPower(PivotPIDControl(0,backRight.getCurrentPosition()));
+                    return true;
+                }
+                else
+                {
+                    pivot.setPower(0);
+                    return false;
+                }
+            }
+        }
+
+        public Action movePivotDown()
+        {
+            return new movePivotDown();
+        }
+
+        public class setIntakeRotate implements Action
+        {
+            private double pos;
+            public setIntakeRotate(double pos)
+            {
+                this.pos = pos;
+            }
+
+            @Override
+            public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+                intakeRotate.setPosition(pos);
+                return false;
+            }
+        }
+
+        public Action setIntakeRotate(double pos)
+        {
+            return new setIntakeRotate(pos);
+        }
+
+        public class startIntakeSlow implements Action
+        {
+            @Override
+            public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+                intake.setPower(.3);
+                return false;
+            }
+        }
+
+        public Action startIntakeSlow()
+        {
+            return new startIntakeSlow();
+        }
+
+        public class startOuttake implements Action
+        {
+            @Override
+            public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+                intake.setPower(-.1);
+                return false;
+            }
+        }
+
+        public Action startOuttake()
+        {
+            return new startOuttake();
+        }
 
     }
 }
