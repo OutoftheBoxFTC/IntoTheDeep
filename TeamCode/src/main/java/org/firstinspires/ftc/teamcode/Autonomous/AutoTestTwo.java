@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
+import com.acmerobotics.roadrunner.ParallelAction;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.TrajectoryActionBuilder;
@@ -25,9 +26,11 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import java.util.Set;
+
 @Config
-@Autonomous(name = "TestAuto", group = "Autonomous")
-public class AutonomousTest extends LinearOpMode {
+@Autonomous(name = "TestAutoTwo", group = "Autonomous")
+public class AutoTestTwo extends LinearOpMode {
 
     public DcMotorEx backLeft;
     @Override
@@ -48,16 +51,14 @@ public class AutonomousTest extends LinearOpMode {
 
         TrajectoryActionBuilder one = drive.actionBuilder(initialPose)
                 .strafeTo(new Vector2d(-24.8, 0)) // deliver preload specimen
-                .waitSeconds(1)
                 ;
 
         TrajectoryActionBuilder two = one.endTrajectory().fresh()
-                .strafeTo(new Vector2d(-22, 0)) // back up (prev: 16.26)
+                .waitSeconds(0.2)
+                .strafeTo(new Vector2d(-16.26, 0)) // back up (prev: 16.26)
                 ;
 
         TrajectoryActionBuilder twohalf = two.endTrajectory().fresh()
-                .strafeTo(new Vector2d(-16.26, 0)) // back up (prev: 16.26)
-                .waitSeconds(1)
                 .strafeToLinearHeading(new Vector2d(-26.3, 16.7), Math.toRadians(125.1)) // move forward to first sample pickup
                 ;
 
@@ -84,62 +85,61 @@ public class AutonomousTest extends LinearOpMode {
 
         TrajectoryActionBuilder eight = seven.endTrajectory().fresh()
                 .strafeToLinearHeading(new Vector2d(-5, 28), Math.toRadians(0))
-                .waitSeconds(1)
                 ;
 
         TrajectoryActionBuilder nine = eight.endTrajectory().fresh()
-                .strafeToLinearHeading(new Vector2d(-24.8, 0), Math.toRadians(0))
-                .waitSeconds(1)
+                .waitSeconds(0.1)
+                .strafeToLinearHeading(new Vector2d(-26, -3), Math.toRadians(0))
                 ;
 
         TrajectoryActionBuilder ninehalf = nine.endTrajectory().fresh()
-                .strafeTo(new Vector2d(-22.5, 0)) // back up (prev: 16.26)
-                .waitSeconds(1)
+                .waitSeconds(0.2)
+                .strafeTo(new Vector2d(-16.26, -3)) // back up (prev: 16.26)
                 ;
 
-        TrajectoryActionBuilder ninehalftwo = ninehalf.endTrajectory().fresh()
-                .strafeTo(new Vector2d(-16.26, 0)) // back up (prev: 16.26)
-                .waitSeconds(1)
-                ;
-
-        TrajectoryActionBuilder ten = ninehalftwo.endTrajectory().fresh()
+        TrajectoryActionBuilder ten = ninehalf.endTrajectory().fresh()
                 .strafeTo(new Vector2d(-5, 28))
-                .waitSeconds(1)
                 ;
 
         TrajectoryActionBuilder eleven = ten.endTrajectory().fresh()
-                .strafeTo(new Vector2d(-24.8, 0))
-                .waitSeconds(1)
+                .waitSeconds(0.1)
+                .strafeTo(new Vector2d(-26, -6))
                 ;
         TrajectoryActionBuilder elevenhalf = eleven.endTrajectory().fresh()
-                .strafeTo(new Vector2d(-22.5, 0)) // back up (prev: 16.26)
-                .waitSeconds(1)
+                .waitSeconds(0.2)
+                .strafeTo(new Vector2d(-16.26, -6)) // back up (prev: 16.26)
                 ;
 
-        TrajectoryActionBuilder elevenhalftwo = elevenhalf.endTrajectory().fresh()
-                .strafeTo(new Vector2d(-16.26, 0)) // back up (prev: 16.26)
-                .waitSeconds(1)
-                ;
 
-        TrajectoryActionBuilder twelve = elevenhalftwo.endTrajectory().fresh()
+        TrajectoryActionBuilder twelve = elevenhalf.endTrajectory().fresh()
                 .strafeTo(new Vector2d(-5, 28))
-                .waitSeconds(1)
                 ;
 
         TrajectoryActionBuilder thirteen = twelve.endTrajectory().fresh()
-                .strafeTo(new Vector2d(-24.8, 0))
-                .waitSeconds(1)
+                .waitSeconds(0.1)
+                .strafeTo(new Vector2d(-26, -9))
                 ;
 
         TrajectoryActionBuilder thirteenhalf = thirteen.endTrajectory().fresh()
-                .strafeTo(new Vector2d(-22.5, 0)) // back up (prev: 16.26)
-                .waitSeconds(1)
+                .waitSeconds(0.2)
+                .strafeTo(new Vector2d(-16.26, -9)) // back up (prev: 16.26)
                 ;
 
-        TrajectoryActionBuilder thirteenhalftwo = thirteenhalf.endTrajectory().fresh()
-                .strafeTo(new Vector2d(-16.26, 0)) // back up (prev: 16.26)
-                .waitSeconds(1)
+        TrajectoryActionBuilder fourteen = thirteenhalf.endTrajectory().fresh()
+                .strafeTo(new Vector2d(-5, 28))
                 ;
+
+        TrajectoryActionBuilder fifteen = fourteen.endTrajectory().fresh()
+                .waitSeconds(0.1)
+                .strafeTo(new Vector2d(-26, -12))
+                ;
+
+        TrajectoryActionBuilder fifteenhalf = fifteen.endTrajectory().fresh()
+                .waitSeconds(0.2)
+                .strafeTo(new Vector2d(-16.26, -12)) // back up (prev: 16.26)
+                ;
+
+
 
 
 
@@ -159,15 +159,15 @@ public class AutonomousTest extends LinearOpMode {
         Action trajEight = eight.build();
         Action trajNine = nine.build();
         Action trajNineHalf = ninehalf.build();
-        Action trajNineHalfTwo = ninehalftwo.build();
         Action trajTen = ten.build();
         Action trajEleven = eleven.build();
         Action trajElevenHalf = elevenhalf.build();
-        Action trajElevenHalfTwo = elevenhalftwo.build();
         Action trajTwelve = twelve.build();
         Action trajThirteen = thirteen.build();
         Action trajThirteenHalf = thirteenhalf.build();
-        Action trajThirteenHalfTwo = thirteenhalftwo.build();
+        Action trajFourteen = fourteen.build();
+        Action trajFifteen = fifteen.build();
+        Action trajFifteenHalf = fifteenhalf.build();
 
 
         telemetry.update();
@@ -181,79 +181,203 @@ public class AutonomousTest extends LinearOpMode {
         telemetry.addData("test",drive.pose.toString());
         telemetry.update();
 
+       Actions.runBlocking(
+               new ParallelAction(
+                       trajOne,
+                       robot.movePivotUp(),
+                       robot.setIntakeRotate(.7)
+
+               )
+       );
+
+       Actions.runBlocking(
+               new SequentialAction(
+                       robot.setPivotPower(.2),
+                       robot.setIntakeRotate(.4),
+                       robot.startIntakeSlow()
+               )
+       );
+
+       Actions.runBlocking(
+               new ParallelAction(
+                       robot.outtakeAfter(600),
+                       trajTwo
+               )
+       );
+
+       Actions.runBlocking(
+               new ParallelAction(
+                       robot.movePivotDown(),
+                       trajTwoHalf // pickup first thing
+               )
+       );
+
+
+
+       Actions.runBlocking(
+               new SequentialAction(
+                       robot.startIntake(), // start intake
+                       robot.extendSlidesPower(-13000, -0.5),
+                       robot.extendSlidesPower(-15000, -0.35),
+                       robot.stopIntake(),
+                       trajThree, // deliver first block
+                       robot.extendSlidesPower(-18000, -1),
+                       robot.outtake(),
+                       robot.retractSlidesPower(-13000, 1),
+                       trajFour, // pickup second block
+                       robot.startIntake(),
+                       robot.extendSlidesPower(-15000, -0.4),
+                       robot.stopIntake(),
+                       trajFive, // deliver second block
+                       robot.outtake(),
+                       robot.retractSlidesPower(-13000, 1),
+                       trajSix, // pickup third block
+                       robot.startIntake(),
+                       robot.extendSlidesPower(-15000, -0.4),
+                       robot.stopIntake(),
+                       robot.retractSlidesPower(-13000, 1),
+                       trajSeven, // deliver third block
+                       robot.extendSlidesPower(-15000, -1),
+                       robot.outtake(),
+                       robot.retractSlidesPower(-200, 1)
+               )
+       );
+
+       Actions.runBlocking(
+               new ParallelAction(
+                       robot.startIntake(),
+                       trajEight,
+                       robot.setIntakeRotate(0.58)
+               )
+       );
+
+       Actions.runBlocking(
+               new ParallelAction(
+                       trajNine,
+                       robot.movePivotUp()
+
+               )
+       );
+
         Actions.runBlocking(
                 new SequentialAction(
-                        trajOne, // specimen score
-                        robot.setIntakeRotate(1),
-                        robot.movePivotUp(),
-                        robot.setIntakeRotate(.43),
-                        robot.startIntakeSlow(),
-                        trajTwo, // backup a bit
-                        robot.startOuttake(),
-                        trajTwoHalf, // backup more
-                        robot.movePivotDown(), // move pivot down
-                        robot.startIntake(), // start intake
-                        robot.extendSlidesPower(-13000, -0.5),
-                        robot.extendSlidesPower(-15000, -0.35),
-                        robot.stopIntake(),
-                        trajThree, // deliver first block
-                        robot.extendSlidesPower(-18000, -1),
-                        robot.outtake(),
-                        robot.retractSlidesPower(-13000, 1),
-                        trajFour, // pickup second block
-                        robot.startIntake(),
-                        robot.extendSlidesPower(-15000, -0.4),
-                        robot.stopIntake(),
-                        trajFive, // deliver second block
-                        robot.outtake(),
-                        robot.retractSlidesPower(-13000, 1),
-                        trajSix, // pickup third block
-                        robot.startIntake(),
-                        robot.extendSlidesPower(-15000, -0.4),
-                        robot.stopIntake(),
-                        robot.retractSlidesPower(-13000, 1),
-                        trajSeven, // deliver third block
-                        robot.extendSlidesPower(-15000, -1),
-                        robot.outtake(),
-                        robot.retractSlidesPower(-200, 1),
-                        robot.setIntakeRotate(0.58),
-                        robot.startIntake(),
-                        trajEight, // pickup first specimen
-                        robot.movePivotUp(),
-                        trajNine, // specimen score
-                        robot.movePivotUp(),
-                        robot.setIntakeRotate(.43),
-                        robot.startIntakeSlow(),
-                        trajNineHalf, // backup a bit
-                        robot.startOuttake(),
-                        trajNineHalfTwo, // backup more
-                        robot.movePivotDown(), // move pivot down
-                        robot.startIntake(), // start intake
-                        robot.setIntakeRotate(0.58),
-                        trajTen, // pickup second specimen
-                        robot.movePivotUp(),
-                        trajEleven, // specimen score
-                        robot.movePivotUp(),
-                        robot.setIntakeRotate(.43),
-                        robot.startIntakeSlow(),
-                        trajElevenHalf, // backup a bit
-                        robot.startOuttake(),
-                        trajElevenHalfTwo, // backup more
-                        robot.movePivotDown(), // move pivot down
-                        robot.startIntake(), // start intake
-                        robot.setIntakeRotate(0.58),
-                        trajTwelve, // pickup third specimen
-                        robot.movePivotUp(),
-                        trajThirteen, // specimen score
-                        robot.movePivotUp(),
-                        robot.setIntakeRotate(.43),
-                        robot.startIntakeSlow(),
-                        trajThirteenHalf, // backup a bit
-                        robot.startOuttake(),
-                        trajThirteenHalfTwo, // backup more
-                        robot.movePivotDown() // move pivot down
+                        robot.setPivotPower(.2),
+                        robot.setIntakeRotate(.40),
+                        robot.startIntakeSlow()
                 )
         );
+
+        Actions.runBlocking(
+                new ParallelAction(
+                        robot.outtakeAfter(600),
+                        trajNineHalf
+                )
+        );
+
+        //
+
+        Actions.runBlocking(
+                new ParallelAction(
+                        robot.movePivotDown(),
+                        robot.startIntake(),
+                        trajTen,
+                        robot.setIntakeRotate(0.58)
+                )
+        );
+
+        Actions.runBlocking(
+                new ParallelAction(
+                        trajEleven,
+                        robot.movePivotUp()
+
+                )
+        );
+
+        Actions.runBlocking(
+                new SequentialAction(
+                        robot.setPivotPower(.2),
+                        robot.setIntakeRotate(.40),
+                        robot.startIntakeSlow()
+                )
+        );
+
+        Actions.runBlocking(
+                new ParallelAction(
+                        robot.outtakeAfter(600),
+                        trajElevenHalf
+                )
+        );
+
+        //
+
+        Actions.runBlocking(
+                new ParallelAction(
+                        robot.movePivotDown(),
+                        robot.startIntake(),
+                        trajTwelve,
+                        robot.setIntakeRotate(0.58)
+                )
+        );
+
+        Actions.runBlocking(
+                new ParallelAction(
+                        trajThirteen,
+                        robot.movePivotUp()
+
+                )
+        );
+
+        Actions.runBlocking(
+                new SequentialAction(
+                        robot.setPivotPower(.2),
+                        robot.setIntakeRotate(.40),
+                        robot.startIntakeSlow()
+                )
+        );
+
+        Actions.runBlocking(
+                new ParallelAction(
+                        robot.outtakeAfter(600),
+                        trajThirteenHalf
+                )
+        );
+
+        //
+
+        Actions.runBlocking(
+                new ParallelAction(
+                        robot.movePivotDown(),
+                        robot.startIntake(),
+                        trajFourteen,
+                        robot.setIntakeRotate(0.58)
+                )
+        );
+
+        Actions.runBlocking(
+                new ParallelAction(
+                        trajFifteen,
+                        robot.movePivotUp()
+
+                )
+        );
+
+        Actions.runBlocking(
+                new SequentialAction(
+                        robot.setPivotPower(.2),
+                        robot.setIntakeRotate(.40),
+                        robot.startIntakeSlow()
+                )
+        );
+
+        Actions.runBlocking(
+                new ParallelAction(
+                        robot.outtakeAfter(600),
+                        trajFifteenHalf
+                )
+        );
+
+
+
 
 
         while(opModeIsActive())
@@ -480,7 +604,7 @@ public class AutonomousTest extends LinearOpMode {
                     initialized = true;
                 }
 
-                if(timer.milliseconds() < 400)
+                if(timer.milliseconds() < 200)
                     return true;
                 else {
                     intake.setPower(0);
@@ -494,14 +618,37 @@ public class AutonomousTest extends LinearOpMode {
             return new Outtake();
         }
 
-        public class InitializeIntake implements Action
+        public class OuttakeAfter implements Action
         {
-            @Override
-            public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-                intakeRotate.setPosition(.25);
-                return false;
+            private int ms;
+            private ElapsedTime timer = null;
+            private boolean initialized = false;
+            public OuttakeAfter(int ms) {
+                this.ms = ms;
+            }
+            public boolean run(@NonNull TelemetryPacket packet) {
+                if(!initialized)
+                {
+                    timer = new ElapsedTime();
+                    initialized = true;
+                }
+
+                if(timer.milliseconds() < ms) {
+                    return true;
+                }
+
+                else {
+                    intake.setPower(-.3);
+                    return false;
+                }
             }
         }
+
+        public Action outtakeAfter(int ms)
+        {
+            return new OuttakeAfter(ms);
+        }
+
 
         public class extendSlidesPower implements Action {
             private int target;
@@ -651,6 +798,25 @@ public class AutonomousTest extends LinearOpMode {
         public Action startOuttake()
         {
             return new startOuttake();
+        }
+
+        public class SetPivotPower implements Action
+        {
+            private double p;
+            public SetPivotPower(double p)
+            {
+               this.p = p;
+            }
+            @Override
+            public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+                pivot.setPower(p);
+                return false;
+            }
+        }
+
+        public Action setPivotPower(double p)
+        {
+            return new SetPivotPower(p);
         }
 
     }

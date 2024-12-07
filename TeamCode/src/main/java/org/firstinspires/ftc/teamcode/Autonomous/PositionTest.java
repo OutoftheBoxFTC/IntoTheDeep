@@ -30,6 +30,8 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 public class PositionTest extends LinearOpMode {
 
     public DcMotorEx backLeft;
+    private Servo intakeRotate;
+    public static double intakeRotatePos = 1;
     @Override
     public void runOpMode() {
         Pose2d initialPose = new Pose2d(0, 0, Math.toRadians(0));
@@ -39,6 +41,7 @@ public class PositionTest extends LinearOpMode {
         backLeft = hardwareMap.get(DcMotorEx.class, "bl");
         backLeft.setDirection(DcMotorSimple.Direction.REVERSE);
 
+        intakeRotate = hardwareMap.get(Servo.class, "intakeRotate");
 
         Pose2d currentPose = null;
 
@@ -195,7 +198,14 @@ public class PositionTest extends LinearOpMode {
             telemetry.addData("heading",Math.toDegrees(drive.pose.heading.toDouble()));
             telemetry.addData("test",drive.pose.toString());
             telemetry.addData("slides", backLeft.getCurrentPosition());
+            telemetry.addData("intakeRotatePos", intakeRotatePos);
 
+            if(gamepad1.a)
+                intakeRotatePos += 0.05;
+            if(gamepad1.b)
+                intakeRotatePos -= 0.05;
+
+            intakeRotate.setPosition(intakeRotatePos);
             telemetry.update();
         }
 
