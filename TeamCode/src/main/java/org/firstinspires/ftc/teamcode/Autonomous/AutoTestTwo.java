@@ -193,7 +193,7 @@ public class AutoTestTwo extends LinearOpMode {
        Actions.runBlocking(
                new SequentialAction(
                        robot.setPivotPower(.2),
-                       robot.setIntakeRotate(.4),
+                       robot.setIntakeRotate(.46),
                        robot.startIntakeSlow()
                )
        );
@@ -221,7 +221,7 @@ public class AutoTestTwo extends LinearOpMode {
                        robot.extendSlidesPower(-15000, -0.35),
                        robot.stopIntake(),
                        trajThree, // deliver first block
-                       robot.extendSlidesPower(-18000, -1),
+                       robot.extendSlidesPower(-15000, -1),
                        robot.outtake(),
                        robot.retractSlidesPower(-13000, 1),
                        trajFour, // pickup second block
@@ -262,7 +262,7 @@ public class AutoTestTwo extends LinearOpMode {
         Actions.runBlocking(
                 new SequentialAction(
                         robot.setPivotPower(.2),
-                        robot.setIntakeRotate(.40),
+                        robot.setIntakeRotate(.46),
                         robot.startIntakeSlow()
                 )
         );
@@ -296,7 +296,7 @@ public class AutoTestTwo extends LinearOpMode {
         Actions.runBlocking(
                 new SequentialAction(
                         robot.setPivotPower(.2),
-                        robot.setIntakeRotate(.40),
+                        robot.setIntakeRotate(.46),
                         robot.startIntakeSlow()
                 )
         );
@@ -330,7 +330,7 @@ public class AutoTestTwo extends LinearOpMode {
         Actions.runBlocking(
                 new SequentialAction(
                         robot.setPivotPower(.2),
-                        robot.setIntakeRotate(.40),
+                        robot.setIntakeRotate(.46),
                         robot.startIntakeSlow()
                 )
         );
@@ -364,7 +364,7 @@ public class AutoTestTwo extends LinearOpMode {
         Actions.runBlocking(
                 new SequentialAction(
                         robot.setPivotPower(.2),
-                        robot.setIntakeRotate(.40),
+                        robot.setIntakeRotate(.46),
                         robot.startIntakeSlow()
                 )
         );

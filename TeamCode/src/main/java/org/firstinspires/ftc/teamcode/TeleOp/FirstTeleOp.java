@@ -418,9 +418,9 @@ public class FirstTeleOp extends OpMode
                 setSlidePower(-.4);
             }
             else {
-                if (gamepad2.right_trigger > 0.1) {
+                if (gamepad2.right_trigger > 0.1 && getSlidesPosition() < 0) {
                     setSlidePower(-1);
-                } else if (gamepad2.left_trigger > 0.1) {
+                } else if (gamepad2.left_trigger > 0.1 && getSlidesPosition() > -20000) {
                     setSlidePower(1);
                 } else {
                     setSlidePower(0);
