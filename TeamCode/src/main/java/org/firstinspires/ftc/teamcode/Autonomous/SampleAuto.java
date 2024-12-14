@@ -1,18 +1,15 @@
 package org.firstinspires.ftc.teamcode.Autonomous;
 
 import androidx.annotation.NonNull;
+
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.AccelConstraint;
 import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.AngularVelConstraint;
-import com.acmerobotics.roadrunner.Arclength;
-import com.acmerobotics.roadrunner.MinMax;
 import com.acmerobotics.roadrunner.MinVelConstraint;
 import com.acmerobotics.roadrunner.ParallelAction;
 import com.acmerobotics.roadrunner.Pose2d;
-import com.acmerobotics.roadrunner.Pose2dDual;
-import com.acmerobotics.roadrunner.PosePath;
 import com.acmerobotics.roadrunner.ProfileAccelConstraint;
 import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.TrajectoryActionBuilder;
@@ -21,31 +18,23 @@ import com.acmerobotics.roadrunner.Vector2d;
 import com.acmerobotics.roadrunner.VelConstraint;
 import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-
-import org.firstinspires.ftc.robotcore.external.navigation.Acceleration;
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import org.firstinspires.ftc.teamcode.MecanumDrive;
-
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import java.util.Arrays;
-import java.util.Set;
+import org.firstinspires.ftc.teamcode.MecanumDrive;
 
-@Disabled
+import java.util.Arrays;
+
 @Config
-@Autonomous(name = "TestAutoTwo", group = "Autonomous")
-public class AutoTestTwo extends LinearOpMode {
+@Autonomous(name = "SampleAuto", group = "Autonomous")
+public class SampleAuto extends LinearOpMode {
 
     public DcMotorEx backLeft;
     @Override
@@ -78,88 +67,28 @@ public class AutoTestTwo extends LinearOpMode {
                 ;
 
         TrajectoryActionBuilder twohalf = two.endTrajectory().fresh()
-                .strafeToLinearHeading(new Vector2d(-26.3, 16.7), Math.toRadians(141.1)) // move forward to first sample pickup
+                .strafeToLinearHeading(new Vector2d(-23.7, -23.45), Math.toRadians(-143)) // move forward to first sample pickup
                 ;
 
 
         TrajectoryActionBuilder three = twohalf.endTrajectory().fresh()
-                .strafeToLinearHeading(new Vector2d(-16.9, 24.2),Math.toRadians(45.6)) // deliver first sample
+                .strafeToLinearHeading(new Vector2d(-14, -41),Math.toRadians(128)) // deliver first sample
                 ;
 
         TrajectoryActionBuilder four = three.endTrajectory().fresh()
-                .strafeToLinearHeading(new Vector2d(-26.8,27.3), Math.toRadians(125.4)) // pickup second
+                .strafeToLinearHeading(new Vector2d(-25.92,-32.86), Math.toRadians(-135)) // pickup second
                 ;
 
         TrajectoryActionBuilder five = four.endTrajectory().fresh()
-                .strafeToLinearHeading(new Vector2d(-19.2, 31.1),Math.toRadians(50)) // deliver second
+                .strafeToLinearHeading(new Vector2d(-14, -41),Math.toRadians(128)) // deliver second
                 ;
 
         TrajectoryActionBuilder six = five.endTrajectory().fresh()
-                .strafeToLinearHeading(new Vector2d(-29.9, 36), Math.toRadians(113.2)) // pickup third
+                .strafeToLinearHeading(new Vector2d(-26.89, -40.41), Math.toRadians(-136)) // pickup third
                 ;
 
         TrajectoryActionBuilder seven = six.endTrajectory().fresh()
-                .strafeToLinearHeading(new Vector2d(-19.2, 38),Math.toRadians(50)) // deliver third
-                ;
-
-        TrajectoryActionBuilder eight = seven.endTrajectory().fresh()
-                .strafeToLinearHeading(new Vector2d(-12, 28), Math.toRadians(0))
-                .strafeToLinearHeading(new Vector2d(-5, 28), Math.toRadians(0))
-                ;
-
-        TrajectoryActionBuilder nine = eight.endTrajectory().fresh()
-                .waitSeconds(0.1)
-                .strafeToLinearHeading(new Vector2d(-26, -3), Math.toRadians(0))
-                ;
-
-        TrajectoryActionBuilder ninehalf = nine.endTrajectory().fresh()
-                .waitSeconds(0.2)
-                .strafeTo(new Vector2d(-16.26, -3)) // back up (prev: 16.26)
-                ;
-
-        TrajectoryActionBuilder ten = ninehalf.endTrajectory().fresh()
-                .strafeTo(new Vector2d(-9, 28))
-                .strafeTo(new Vector2d(-5, 28))
-                ;
-
-        TrajectoryActionBuilder eleven = ten.endTrajectory().fresh()
-                .waitSeconds(0.1)
-                .strafeTo(new Vector2d(-26, -6))
-                ;
-        TrajectoryActionBuilder elevenhalf = eleven.endTrajectory().fresh()
-                .waitSeconds(0.2)
-                .strafeTo(new Vector2d(-16.26, -6)) // back up (prev: 16.26)
-                ;
-
-
-        TrajectoryActionBuilder twelve = elevenhalf.endTrajectory().fresh()
-                .strafeTo(new Vector2d(-9, 28))
-                .strafeTo(new Vector2d(-5, 28))
-                ;
-
-        TrajectoryActionBuilder thirteen = twelve.endTrajectory().fresh()
-                .waitSeconds(0.1)
-                .strafeTo(new Vector2d(-26, -9))
-                ;
-
-        TrajectoryActionBuilder thirteenhalf = thirteen.endTrajectory().fresh()
-                .waitSeconds(0.2)
-                .strafeTo(new Vector2d(-16.26, -9)) // back up (prev: 16.26)
-                ;
-
-        TrajectoryActionBuilder fourteen = thirteenhalf.endTrajectory().fresh()
-                .strafeTo(new Vector2d(-9, 28))
-                .strafeTo(new Vector2d(-5, 28))
-                ;
-
-        TrajectoryActionBuilder fifteen = fourteen.endTrajectory().fresh()
-                .waitSeconds(0.1)
-                .strafeTo(new Vector2d(-26, -12))
-                ;
-
-        TrajectoryActionBuilder fifteenhalf = fifteen.endTrajectory().fresh()
-                .waitSeconds(0.2)
-                .strafeTo(new Vector2d(-16.26, -12)) // back up (prev: 16.26)
+                .strafeToLinearHeading(new Vector2d(-14, -41),Math.toRadians(128)) // deliver third
                 ;
 
 
@@ -176,19 +105,6 @@ public class AutoTestTwo extends LinearOpMode {
         Action trajFive = five.build();
         Action trajSix = six.build();
         Action trajSeven = seven.build();
-        Action trajEight = eight.build();
-        Action trajNine = nine.build();
-        Action trajNineHalf = ninehalf.build();
-        Action trajTen = ten.build();
-        Action trajEleven = eleven.build();
-        Action trajElevenHalf = elevenhalf.build();
-        Action trajTwelve = twelve.build();
-        Action trajThirteen = thirteen.build();
-        Action trajThirteenHalf = thirteenhalf.build();
-        Action trajFourteen = fourteen.build();
-        Action trajFifteen = fifteen.build();
-        Action trajFifteenHalf = fifteenhalf.build();
-
 
         telemetry.update();
         waitForStart();
@@ -262,170 +178,6 @@ public class AutoTestTwo extends LinearOpMode {
                        robot.retractSlidesPower(-200, 1)
                )
        );
-
-       Actions.runBlocking(
-               new ParallelAction(
-                       robot.setSlidesPowerX(.2),
-                       robot.startIntake(),
-                       trajEight,
-                       robot.setIntakeRotate(0.54)
-               )
-       );
-
-       Actions.runBlocking(
-               new SequentialAction(
-                       robot.setIntakeRotate(0.58)
-               )
-       );
-       Actions.runBlocking(
-               new ParallelAction(
-                       robot.setIntakeRotate(0.7),
-                       trajNine,
-                       robot.movePivotUp()
-
-               )
-       );
-
-        Actions.runBlocking(
-                new SequentialAction(
-                        robot.setPivotPower(.2),
-                        robot.setIntakeRotate(.42),
-                        robot.startIntakeSlow()
-                )
-        );
-
-        Actions.runBlocking(
-                new ParallelAction(
-                        robot.outtakeAfter(600),
-                        trajNineHalf
-                )
-        );
-
-        //
-
-        Actions.runBlocking(
-                new ParallelAction(
-                        robot.movePivotDown(),
-                        robot.startIntake(),
-                        trajTen,
-                        robot.setIntakeRotate(0.54)
-                )
-        );
-
-        Actions.runBlocking(
-                new SequentialAction(
-                        robot.setIntakeRotate(0.58)
-                )
-        );
-
-        Actions.runBlocking(
-                new ParallelAction(
-                        robot.setIntakeRotate(0.7),
-                        trajEleven,
-                        robot.movePivotUp()
-
-                )
-        );
-
-        Actions.runBlocking(
-                new SequentialAction(
-                        robot.setPivotPower(.2),
-                        robot.setIntakeRotate(.42),
-                        robot.startIntakeSlow()
-                )
-        );
-
-        Actions.runBlocking(
-                new ParallelAction(
-                        robot.outtakeAfter(600),
-                        trajElevenHalf
-                )
-        );
-
-        //
-
-        Actions.runBlocking(
-                new ParallelAction(
-                        robot.movePivotDown(),
-                        robot.startIntake(),
-                        trajTwelve,
-                        robot.setIntakeRotate(0.54)
-                )
-        );
-
-        Actions.runBlocking(
-                new SequentialAction(
-                        robot.setIntakeRotate(0.58)
-                )
-        );
-
-        Actions.runBlocking(
-                new ParallelAction(
-                        robot.setIntakeRotate(0.7),
-                        trajThirteen,
-                        robot.movePivotUp()
-
-                )
-        );
-
-        Actions.runBlocking(
-                new SequentialAction(
-                        robot.setPivotPower(.2),
-                        robot.setIntakeRotate(.42),
-                        robot.startIntakeSlow()
-                )
-        );
-
-        Actions.runBlocking(
-                new ParallelAction(
-                        robot.outtakeAfter(600),
-                        trajThirteenHalf
-                )
-        );
-
-        //
-
-        Actions.runBlocking(
-                new ParallelAction(
-                        robot.movePivotDown(),
-                        robot.startIntake(),
-                        trajFourteen,
-                        robot.setIntakeRotate(0.54)
-                )
-        );
-
-        Actions.runBlocking(
-                new SequentialAction(
-                        robot.setIntakeRotate(0.58)
-                )
-        );
-
-        Actions.runBlocking(
-                new ParallelAction(
-                        robot.setIntakeRotate(0.7),
-                        trajFifteen,
-                        robot.movePivotUp()
-
-                )
-        );
-
-        Actions.runBlocking(
-                new SequentialAction(
-                        robot.setPivotPower(.2),
-                        robot.setIntakeRotate(.42),
-                        robot.startIntakeSlow()
-                )
-        );
-
-        Actions.runBlocking(
-                new ParallelAction(
-                        robot.outtakeAfter(600),
-                        trajFifteenHalf
-                )
-        );
-
-
-
 
 
         while(opModeIsActive())

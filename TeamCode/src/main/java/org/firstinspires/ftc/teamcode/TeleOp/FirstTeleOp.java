@@ -103,6 +103,7 @@ public class FirstTeleOp extends OpMode
     public boolean transitionToIntake = true;
     public boolean hangState = false;
 
+
     // values
     public static int slidesHigh = -26000;
     public static int pivotScore = 800;
@@ -123,7 +124,7 @@ public class FirstTeleOp extends OpMode
     private AnalogInput gearpos = null;
 
     private AnalogInput canandgyro = null;
-    double zeroPoint = 0;
+    public static double zeroPoint;
 
     public static int pivotTarget = 0;
 
@@ -173,7 +174,6 @@ public class FirstTeleOp extends OpMode
 
         pivot  = hardwareMap.get(DcMotorEx.class, "p");
         pivot.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        pivot.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         pivot.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         pivot.setDirection(DcMotorSimple.Direction.REVERSE);
 
@@ -182,18 +182,10 @@ public class FirstTeleOp extends OpMode
 
         limitSwitch = hardwareMap.get(DigitalChannel.class, "limitSwitch");
 
-        backLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        backRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        frontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        frontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-
         backLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         backRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         frontLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         frontRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-
-
-        zeroPoint = canandgyro.getVoltage();
 
         intake = hardwareMap.get(CRServo.class, "intake");
         intakeRotate = hardwareMap.get(Servo.class, "intakeRotate");
@@ -252,7 +244,7 @@ public class FirstTeleOp extends OpMode
             SpecimenState = false;
             hangState = false;
         }
-        if(gamepad2.left_bumper) // gamepad2 left bumper
+        if(gamepad2.left_bumper && !hangState) // gamepad2 left bumper
         {
             IntakeState = false;
             HighGoalState = false;
@@ -272,7 +264,7 @@ public class FirstTeleOp extends OpMode
             SpecimenState = false;
             hangState = false;
         }
-        if(gamepad2.right_bumper) // gamepad2 right bumper
+        if(gamepad2.right_bumper && !hangState) // gamepad2 right bumper
         {
             IntakeState = false;
             HighGoalState = false;
@@ -282,7 +274,7 @@ public class FirstTeleOp extends OpMode
             SpecimenState = false;
             hangState = false;
         }
-        if(gamepad2.y) // specimen: gamepad2 y
+        if(gamepad2.y && !hangState) // specimen: gamepad2 y
         {
             IntakeState = false;
             HighGoalState = false;
@@ -291,9 +283,8 @@ public class FirstTeleOp extends OpMode
             transitionToIntake = true;
             SpecimenState = true;
             hangState = false;
-
         }
-        if(gamepad2.a) {
+        if(gamepad2.a && !hangState) {
             IntakeState = false;
             HighGoalState = false;
             MidGoalState = false;
@@ -308,8 +299,9 @@ public class FirstTeleOp extends OpMode
         if(!hangState) {
             if (backRight.getCurrentPosition() > 500)
                 setSlidePower(SlideUpPIDControl(slidesTarget, getSlidesPosition()));
-            else
+            else {
                 setSlidePower(SlideDownPIDControl(slidesTarget, getSlidesPosition()));
+            }
         }
 
         if(HighGoalState)
@@ -331,7 +323,7 @@ public class FirstTeleOp extends OpMode
             pivotTarget = pivotScore;
             if(backRight.getCurrentPosition() > 500)
             {
-                slidesTarget = -3453;
+                slidesTarget = -5453;
             }
             intakeRotatePos = intakeRotateScore;
             if(gamepad1.right_trigger > 0.1)
@@ -343,7 +335,7 @@ public class FirstTeleOp extends OpMode
         {
             pivotTarget = 0;
             if(transitionToIntake) {
-                slidesTarget = -1000;
+                slidesTarget = 0;
                 transitionToIntake = false;
             }
             // right trigger extend, left trigger retract
@@ -367,6 +359,11 @@ public class FirstTeleOp extends OpMode
                 intake.setPower(1);
                 intakeRotatePos = (1.184*Math.pow(10,-10))*(Math.pow(getSlidesPosition(),2)) + (7.237*Math.pow(10,-8))*getSlidesPosition()+0.055;
             }
+            else if(gamepad1.x)
+            {
+                intake.setPower(-1);
+            }
+
             else
             {
                 intake.setPower(0);
@@ -380,6 +377,7 @@ public class FirstTeleOp extends OpMode
             {
                 slidesTarget = 0;
             }
+
 
         }
         if(InitialState)
@@ -412,6 +410,8 @@ public class FirstTeleOp extends OpMode
         }
         if(hangState)
         {
+            pivotTarget = pivotScore;
+            intakeRotatePos = 0;
             gearshift.setPosition(lowGear);
             if(gearpos.getVoltage() > 1.2 && gearpos.getVoltage() < 1.38)
             {
@@ -427,6 +427,16 @@ public class FirstTeleOp extends OpMode
                 }
             }
 
+            if(slidesTarget < -20000)
+                slidesTarget = -20000;
+            else if(slidesTarget > 0)
+                slidesTarget = 0;
+
+        }
+
+        if(gamepad1.a)
+        {
+            zeroPoint = canandgyro.getVoltage();
         }
 
         // Show the elapsed game time and wheel power.

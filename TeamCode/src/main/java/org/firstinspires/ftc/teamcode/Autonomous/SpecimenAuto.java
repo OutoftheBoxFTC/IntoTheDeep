@@ -1,18 +1,15 @@
 package org.firstinspires.ftc.teamcode.Autonomous;
 
 import androidx.annotation.NonNull;
+
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.AccelConstraint;
 import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.AngularVelConstraint;
-import com.acmerobotics.roadrunner.Arclength;
-import com.acmerobotics.roadrunner.MinMax;
 import com.acmerobotics.roadrunner.MinVelConstraint;
 import com.acmerobotics.roadrunner.ParallelAction;
 import com.acmerobotics.roadrunner.Pose2d;
-import com.acmerobotics.roadrunner.Pose2dDual;
-import com.acmerobotics.roadrunner.PosePath;
 import com.acmerobotics.roadrunner.ProfileAccelConstraint;
 import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.TrajectoryActionBuilder;
@@ -21,38 +18,36 @@ import com.acmerobotics.roadrunner.Vector2d;
 import com.acmerobotics.roadrunner.VelConstraint;
 import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-
-import org.firstinspires.ftc.robotcore.external.navigation.Acceleration;
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import org.firstinspires.ftc.teamcode.MecanumDrive;
-
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.teamcode.MecanumDrive;
+import org.firstinspires.ftc.teamcode.TeleOp.FirstTeleOp;
+
 import java.util.Arrays;
-import java.util.Set;
 
-@Disabled
 @Config
-@Autonomous(name = "TestAutoTwo", group = "Autonomous")
-public class AutoTestTwo extends LinearOpMode {
+@Autonomous(name = "SpecimenAuto", group = "Autonomous")
+public class SpecimenAuto extends LinearOpMode {
 
+    public static double zero;
+    public AnalogInput canandgyro;
     public DcMotorEx backLeft;
     @Override
     public void runOpMode() {
         Pose2d initialPose = new Pose2d(0, 0, Math.toRadians(0));
         MecanumDrive drive = new MecanumDrive(hardwareMap, initialPose);
         ScoreSystem robot = new ScoreSystem(hardwareMap);
+
+        canandgyro = hardwareMap.get(AnalogInput.class, "canandgyro");
 
         backLeft = hardwareMap.get(DcMotorEx.class, "bl");
         backLeft.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -273,11 +268,6 @@ public class AutoTestTwo extends LinearOpMode {
        );
 
        Actions.runBlocking(
-               new SequentialAction(
-                       robot.setIntakeRotate(0.58)
-               )
-       );
-       Actions.runBlocking(
                new ParallelAction(
                        robot.setIntakeRotate(0.7),
                        trajNine,
@@ -312,11 +302,6 @@ public class AutoTestTwo extends LinearOpMode {
                 )
         );
 
-        Actions.runBlocking(
-                new SequentialAction(
-                        robot.setIntakeRotate(0.58)
-                )
-        );
 
         Actions.runBlocking(
                 new ParallelAction(
@@ -337,7 +322,7 @@ public class AutoTestTwo extends LinearOpMode {
 
         Actions.runBlocking(
                 new ParallelAction(
-                        robot.outtakeAfter(600),
+                        robot.outtakeAfter(550),
                         trajElevenHalf
                 )
         );
@@ -353,11 +338,6 @@ public class AutoTestTwo extends LinearOpMode {
                 )
         );
 
-        Actions.runBlocking(
-                new SequentialAction(
-                        robot.setIntakeRotate(0.58)
-                )
-        );
 
         Actions.runBlocking(
                 new ParallelAction(
@@ -395,12 +375,6 @@ public class AutoTestTwo extends LinearOpMode {
         );
 
         Actions.runBlocking(
-                new SequentialAction(
-                        robot.setIntakeRotate(0.58)
-                )
-        );
-
-        Actions.runBlocking(
                 new ParallelAction(
                         robot.setIntakeRotate(0.7),
                         trajFifteen,
@@ -420,12 +394,10 @@ public class AutoTestTwo extends LinearOpMode {
         Actions.runBlocking(
                 new ParallelAction(
                         robot.outtakeAfter(600),
+                        robot.setGyro(),
                         trajFifteenHalf
                 )
         );
-
-
-
 
 
         while(opModeIsActive())
@@ -886,5 +858,19 @@ public class AutoTestTwo extends LinearOpMode {
             return new setSlidesPowerX(p);
         }
 
+        public class setGyro implements Action
+        {
+            @Override
+            public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+                zero = canandgyro.getVoltage();
+                FirstTeleOp.zeroPoint = zero;
+                return true;
+            }
+        }
+
+        public Action setGyro()
+        {
+            return new setGyro();
+        }
     }
 }
