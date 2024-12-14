@@ -3,12 +3,21 @@ package org.firstinspires.ftc.teamcode.Autonomous;
 import androidx.annotation.NonNull;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
+import com.acmerobotics.roadrunner.AccelConstraint;
 import com.acmerobotics.roadrunner.Action;
+import com.acmerobotics.roadrunner.AngularVelConstraint;
+import com.acmerobotics.roadrunner.Arclength;
+import com.acmerobotics.roadrunner.MinMax;
+import com.acmerobotics.roadrunner.MinVelConstraint;
 import com.acmerobotics.roadrunner.ParallelAction;
 import com.acmerobotics.roadrunner.Pose2d;
+import com.acmerobotics.roadrunner.Pose2dDual;
+import com.acmerobotics.roadrunner.PosePath;
 import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.TrajectoryActionBuilder;
+import com.acmerobotics.roadrunner.TranslationalVelConstraint;
 import com.acmerobotics.roadrunner.Vector2d;
+import com.acmerobotics.roadrunner.VelConstraint;
 import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -17,7 +26,9 @@ import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 
+import org.firstinspires.ftc.robotcore.external.navigation.Acceleration;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.MecanumDrive;
 
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -26,6 +37,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import java.util.Arrays;
 import java.util.Set;
 
 @Config
@@ -48,9 +60,13 @@ public class AutoTestTwo extends LinearOpMode {
         Pose2d currentPose = null;
 
 
-
         TrajectoryActionBuilder one = drive.actionBuilder(initialPose)
-                .strafeTo(new Vector2d(-24.8, 0)) // deliver preload specimen
+                .strafeTo(new Vector2d(-24.8, 0), new VelConstraint() {
+                    @Override
+                    public double maxRobotVel(@NonNull Pose2dDual<Arclength> pose2dDual, @NonNull PosePath posePath, double v) {
+                        return 30;
+                    }
+                }) // deliver preload specimen
                 ;
 
         TrajectoryActionBuilder two = one.endTrajectory().fresh()
@@ -59,7 +75,7 @@ public class AutoTestTwo extends LinearOpMode {
                 ;
 
         TrajectoryActionBuilder twohalf = two.endTrajectory().fresh()
-                .strafeToLinearHeading(new Vector2d(-26.3, 16.7), Math.toRadians(125.1)) // move forward to first sample pickup
+                .strafeToLinearHeading(new Vector2d(-26.3, 16.7), Math.toRadians(140.1)) // move forward to first sample pickup
                 ;
 
 
@@ -68,7 +84,7 @@ public class AutoTestTwo extends LinearOpMode {
                 ;
 
         TrajectoryActionBuilder four = three.endTrajectory().fresh()
-                .strafeToLinearHeading(new Vector2d(-26.8,27.3), Math.toRadians(123.4)) // pickup second
+                .strafeToLinearHeading(new Vector2d(-26.8,27.3), Math.toRadians(125.4)) // pickup second
                 ;
 
         TrajectoryActionBuilder five = four.endTrajectory().fresh()
@@ -84,6 +100,7 @@ public class AutoTestTwo extends LinearOpMode {
                 ;
 
         TrajectoryActionBuilder eight = seven.endTrajectory().fresh()
+                .strafeToLinearHeading(new Vector2d(-12, 28), Math.toRadians(0))
                 .strafeToLinearHeading(new Vector2d(-5, 28), Math.toRadians(0))
                 ;
 
@@ -98,6 +115,7 @@ public class AutoTestTwo extends LinearOpMode {
                 ;
 
         TrajectoryActionBuilder ten = ninehalf.endTrajectory().fresh()
+                .strafeTo(new Vector2d(-9, 28))
                 .strafeTo(new Vector2d(-5, 28))
                 ;
 
@@ -112,6 +130,7 @@ public class AutoTestTwo extends LinearOpMode {
 
 
         TrajectoryActionBuilder twelve = elevenhalf.endTrajectory().fresh()
+                .strafeTo(new Vector2d(-9, 28))
                 .strafeTo(new Vector2d(-5, 28))
                 ;
 
@@ -126,6 +145,7 @@ public class AutoTestTwo extends LinearOpMode {
                 ;
 
         TrajectoryActionBuilder fourteen = thirteenhalf.endTrajectory().fresh()
+                .strafeTo(new Vector2d(-9, 28))
                 .strafeTo(new Vector2d(-5, 28))
                 ;
 
@@ -138,9 +158,6 @@ public class AutoTestTwo extends LinearOpMode {
                 .waitSeconds(0.2)
                 .strafeTo(new Vector2d(-16.26, -12)) // back up (prev: 16.26)
                 ;
-
-
-
 
 
 
@@ -193,7 +210,7 @@ public class AutoTestTwo extends LinearOpMode {
        Actions.runBlocking(
                new SequentialAction(
                        robot.setPivotPower(.2),
-                       robot.setIntakeRotate(.46),
+                       robot.setIntakeRotate(.42),
                        robot.startIntakeSlow()
                )
        );
@@ -217,11 +234,11 @@ public class AutoTestTwo extends LinearOpMode {
        Actions.runBlocking(
                new SequentialAction(
                        robot.startIntake(), // start intake
-                       robot.extendSlidesPower(-13000, -0.5),
-                       robot.extendSlidesPower(-15000, -0.35),
+                       robot.extendSlidesPower(-13000, -0.4),
+                       robot.extendSlidesPower(-16000, -0.35),
                        robot.stopIntake(),
                        trajThree, // deliver first block
-                       robot.extendSlidesPower(-15000, -1),
+                       robot.extendSlidesPower(-16000, -1),
                        robot.outtake(),
                        robot.retractSlidesPower(-13000, 1),
                        trajFour, // pickup second block
@@ -253,6 +270,7 @@ public class AutoTestTwo extends LinearOpMode {
 
        Actions.runBlocking(
                new ParallelAction(
+                       robot.setIntakeRotate(0.7),
                        trajNine,
                        robot.movePivotUp()
 
@@ -262,14 +280,14 @@ public class AutoTestTwo extends LinearOpMode {
         Actions.runBlocking(
                 new SequentialAction(
                         robot.setPivotPower(.2),
-                        robot.setIntakeRotate(.46),
+                        robot.setIntakeRotate(.42),
                         robot.startIntakeSlow()
                 )
         );
 
         Actions.runBlocking(
                 new ParallelAction(
-                        robot.outtakeAfter(600),
+                        robot.outtakeAfter(700),
                         trajNineHalf
                 )
         );
@@ -287,6 +305,7 @@ public class AutoTestTwo extends LinearOpMode {
 
         Actions.runBlocking(
                 new ParallelAction(
+                        robot.setIntakeRotate(0.7),
                         trajEleven,
                         robot.movePivotUp()
 
@@ -296,14 +315,14 @@ public class AutoTestTwo extends LinearOpMode {
         Actions.runBlocking(
                 new SequentialAction(
                         robot.setPivotPower(.2),
-                        robot.setIntakeRotate(.46),
+                        robot.setIntakeRotate(.42),
                         robot.startIntakeSlow()
                 )
         );
 
         Actions.runBlocking(
                 new ParallelAction(
-                        robot.outtakeAfter(600),
+                        robot.outtakeAfter(700),
                         trajElevenHalf
                 )
         );
@@ -321,6 +340,7 @@ public class AutoTestTwo extends LinearOpMode {
 
         Actions.runBlocking(
                 new ParallelAction(
+                        robot.setIntakeRotate(0.7),
                         trajThirteen,
                         robot.movePivotUp()
 
@@ -330,14 +350,14 @@ public class AutoTestTwo extends LinearOpMode {
         Actions.runBlocking(
                 new SequentialAction(
                         robot.setPivotPower(.2),
-                        robot.setIntakeRotate(.46),
+                        robot.setIntakeRotate(.42),
                         robot.startIntakeSlow()
                 )
         );
 
         Actions.runBlocking(
                 new ParallelAction(
-                        robot.outtakeAfter(600),
+                        robot.outtakeAfter(700),
                         trajThirteenHalf
                 )
         );
@@ -355,6 +375,7 @@ public class AutoTestTwo extends LinearOpMode {
 
         Actions.runBlocking(
                 new ParallelAction(
+                        robot.setIntakeRotate(0.7),
                         trajFifteen,
                         robot.movePivotUp()
 
@@ -364,14 +385,14 @@ public class AutoTestTwo extends LinearOpMode {
         Actions.runBlocking(
                 new SequentialAction(
                         robot.setPivotPower(.2),
-                        robot.setIntakeRotate(.46),
+                        robot.setIntakeRotate(.42),
                         robot.startIntakeSlow()
                 )
         );
 
         Actions.runBlocking(
                 new ParallelAction(
-                        robot.outtakeAfter(600),
+                        robot.outtakeAfter(700),
                         trajFifteenHalf
                 )
         );
