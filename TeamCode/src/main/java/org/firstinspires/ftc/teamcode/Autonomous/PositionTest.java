@@ -200,12 +200,12 @@ public class PositionTest extends LinearOpMode {
             telemetry.addData("slides", backLeft.getCurrentPosition());
             telemetry.addData("intakeRotatePos", intakeRotatePos);
 
-            if(gamepad1.a)
-                intakeRotatePos += 0.05;
-            if(gamepad1.b)
-                intakeRotatePos -= 0.05;
+//            if(gamepad1.a)
+//                intakeRotatePos += 0.05;
+//            if(gamepad1.b)
+//                intakeRotatePos -= 0.05;
 
-            intakeRotate.setPosition(intakeRotatePos);
+            // intakeRotate.setPosition(intakeRotatePos);
             telemetry.update();
         }
 

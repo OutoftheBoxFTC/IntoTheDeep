@@ -232,8 +232,8 @@ public class SpecimenAuto extends LinearOpMode {
        Actions.runBlocking(
                new SequentialAction(
                        robot.startIntake(), // start intake
-                       robot.extendSlidesPower(-13000, -0.4),
-                       robot.extendSlidesPower(-16000, -0.35),
+                       robot.extendSlidesPower(-13000, -0.55),
+                       robot.extendSlidesPower(-16000, -0.4),
                        robot.stopIntake(),
                        trajThree, // deliver first block
                        robot.extendSlidesPower(-16000, -1),
