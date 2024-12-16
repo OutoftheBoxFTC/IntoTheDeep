@@ -73,16 +73,16 @@ public class SpecimenAuto extends LinearOpMode {
                 ;
 
         TrajectoryActionBuilder twohalf = two.endTrajectory().fresh()
-                .strafeToLinearHeading(new Vector2d(-26.3, 16.7), Math.toRadians(141.1)) // move forward to first sample pickup
+                .strafeToLinearHeading(new Vector2d(-26.3, 16.7), Math.toRadians(135.1)) // 138.1move forward to first sample pickup
                 ;
 
 
         TrajectoryActionBuilder three = twohalf.endTrajectory().fresh()
-                .strafeToLinearHeading(new Vector2d(-16.9, 24.2),Math.toRadians(45.6)) // deliver first sample
+                .strafeToLinearHeading(new Vector2d(-16.9, 24.2),Math.toRadians(48.6)) // deliver first sample
                 ;
 
         TrajectoryActionBuilder four = three.endTrajectory().fresh()
-                .strafeToLinearHeading(new Vector2d(-26.8,27.3), Math.toRadians(125.4)) // pickup second
+                .strafeToLinearHeading(new Vector2d(-26.8,27.3), Math.toRadians(121.4)) // pickup second
                 ;
 
         TrajectoryActionBuilder five = four.endTrajectory().fresh()
@@ -90,11 +90,11 @@ public class SpecimenAuto extends LinearOpMode {
                 ;
 
         TrajectoryActionBuilder six = five.endTrajectory().fresh()
-                .strafeToLinearHeading(new Vector2d(-29.9, 36), Math.toRadians(113.2)) // pickup third
+                .strafeToLinearHeading(new Vector2d(-29.9, 36), Math.toRadians(110.2)) // pickup third
                 ;
 
         TrajectoryActionBuilder seven = six.endTrajectory().fresh()
-                .strafeToLinearHeading(new Vector2d(-19.2, 38),Math.toRadians(50)) // deliver third
+                .strafeToLinearHeading(new Vector2d(-19.2, 38),Math.toRadians(55)) // deliver third
                 ;
 
         TrajectoryActionBuilder eight = seven.endTrajectory().fresh()
@@ -113,7 +113,7 @@ public class SpecimenAuto extends LinearOpMode {
                 ;
 
         TrajectoryActionBuilder ten = ninehalf.endTrajectory().fresh()
-                .strafeTo(new Vector2d(-9, 28))
+                .strafeTo(new Vector2d(-12, 28))
                 .strafeTo(new Vector2d(-5, 28))
                 ;
 
@@ -128,7 +128,7 @@ public class SpecimenAuto extends LinearOpMode {
 
 
         TrajectoryActionBuilder twelve = elevenhalf.endTrajectory().fresh()
-                .strafeTo(new Vector2d(-9, 28))
+                .strafeTo(new Vector2d(-12, 28))
                 .strafeTo(new Vector2d(-5, 28))
                 ;
 
@@ -143,13 +143,13 @@ public class SpecimenAuto extends LinearOpMode {
                 ;
 
         TrajectoryActionBuilder fourteen = thirteenhalf.endTrajectory().fresh()
-                .strafeTo(new Vector2d(-9, 28))
+                .strafeTo(new Vector2d(-12, 28))
                 .strafeTo(new Vector2d(-5, 28))
                 ;
 
         TrajectoryActionBuilder fifteen = fourteen.endTrajectory().fresh()
                 .waitSeconds(0.1)
-                .strafeTo(new Vector2d(-26, -12))
+                .strafeTo(new Vector2d(-26, -10.5))
                 ;
 
         TrajectoryActionBuilder fifteenhalf = fifteen.endTrajectory().fresh()
@@ -233,7 +233,7 @@ public class SpecimenAuto extends LinearOpMode {
                new SequentialAction(
                        robot.startIntake(), // start intake
                        robot.extendSlidesPower(-13000, -0.55),
-                       robot.extendSlidesPower(-16000, -0.4),
+                       robot.extendSlidesPower(-16000, -0.5),
                        robot.stopIntake(),
                        trajThree, // deliver first block
                        robot.extendSlidesPower(-16000, -1),
@@ -248,7 +248,7 @@ public class SpecimenAuto extends LinearOpMode {
                        robot.retractSlidesPower(-13000, 1),
                        trajSix, // pickup third block
                        robot.startIntake(),
-                       robot.extendSlidesPower(-15000, -0.4),
+                       robot.extendSlidesPower(-16000, -0.4),
                        robot.stopIntake(),
                        robot.retractSlidesPower(-13000, 1),
                        trajSeven, // deliver third block
@@ -263,7 +263,7 @@ public class SpecimenAuto extends LinearOpMode {
                        robot.setSlidesPowerX(.2),
                        robot.startIntake(),
                        trajEight,
-                       robot.setIntakeRotate(0.54)
+                       robot.setIntakeRotate(0.55)
                )
        );
 
@@ -286,7 +286,7 @@ public class SpecimenAuto extends LinearOpMode {
 
         Actions.runBlocking(
                 new ParallelAction(
-                        robot.outtakeAfter(600),
+                        robot.outtakeAfter(550),
                         trajNineHalf
                 )
         );
@@ -298,7 +298,7 @@ public class SpecimenAuto extends LinearOpMode {
                         robot.movePivotDown(),
                         robot.startIntake(),
                         trajTen,
-                        robot.setIntakeRotate(0.54)
+                        robot.setIntakeRotate(0.55)
                 )
         );
 
@@ -334,7 +334,7 @@ public class SpecimenAuto extends LinearOpMode {
                         robot.movePivotDown(),
                         robot.startIntake(),
                         trajTwelve,
-                        robot.setIntakeRotate(0.54)
+                        robot.setIntakeRotate(0.55)
                 )
         );
 
@@ -358,7 +358,7 @@ public class SpecimenAuto extends LinearOpMode {
 
         Actions.runBlocking(
                 new ParallelAction(
-                        robot.outtakeAfter(600),
+                        robot.outtakeAfter(550),
                         trajThirteenHalf
                 )
         );
@@ -370,7 +370,7 @@ public class SpecimenAuto extends LinearOpMode {
                         robot.movePivotDown(),
                         robot.startIntake(),
                         trajFourteen,
-                        robot.setIntakeRotate(0.54)
+                        robot.setIntakeRotate(0.55)
                 )
         );
 

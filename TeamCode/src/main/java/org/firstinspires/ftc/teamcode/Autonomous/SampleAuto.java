@@ -82,7 +82,7 @@ public class SampleAuto extends LinearOpMode {
 
         TrajectoryActionBuilder four = three.endTrajectory().fresh()
                 //.strafeToLinearHeading(new Vector2d(-35.40,-30.61), Math.toRadians(-91), baseVelConstraint, baseAccelConstraint) // pickup second
-                .strafeToSplineHeading(new Vector2d(-35.9671,-25.494), Math.toRadians(-90), baseVelConstraint, baseAccelConstraint)
+                .strafeToSplineHeading(new Vector2d(-35.9671,-27.494), Math.toRadians(-96), baseVelConstraint, baseAccelConstraint)
                 ;
 
         TrajectoryActionBuilder five = four.endTrajectory().fresh()
