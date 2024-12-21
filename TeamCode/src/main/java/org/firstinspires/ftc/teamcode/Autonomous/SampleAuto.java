@@ -64,37 +64,44 @@ public class SampleAuto extends LinearOpMode {
 
         TrajectoryActionBuilder two = one.endTrajectory().fresh()
                 .waitSeconds(0.2)
-                .strafeTo(new Vector2d(-16.26, 0), baseVelConstraint, baseAccelConstraint) // back up (prev: 16.26)
+                .strafeTo(new Vector2d(-16.26, 0)) // back up (prev: 16.26)
                 ;
 
         TrajectoryActionBuilder twohalf = two.endTrajectory().fresh()
-                .strafeToLinearHeading(new Vector2d(-16.26,-23), Math.toRadians(-90), baseVelConstraint, baseAccelConstraint)
-                .strafeToSplineHeading(new Vector2d(-35.9671,-23.494), Math.toRadians(-90), baseVelConstraint, baseAccelConstraint)
-                .strafeToSplineHeading(new Vector2d(-35.9671,-18.494), Math.toRadians(-96), baseVelConstraint, baseAccelConstraint)
+                .strafeToSplineHeading(new Vector2d(-27.3088,-18.32), Math.toRadians(-126))
 
                 //.strafeToSplineHeading(new Vector2d(-28.177, -19.79), Math.toRadians(-110), baseVelConstraint, baseAccelConstraint) // move forward to first sample pickup
                 ;
 
 
         TrajectoryActionBuilder three = twohalf.endTrajectory().fresh()
-                .strafeToSplineHeading(new Vector2d(-14.53, -42.74),Math.toRadians(130), baseVelConstraint, baseAccelConstraint) // deliver first sample
+                .strafeToSplineHeading(new Vector2d(-14.53, -42.74),Math.toRadians(130)) // deliver first sample
                 ;
 
         TrajectoryActionBuilder four = three.endTrajectory().fresh()
                 //.strafeToLinearHeading(new Vector2d(-35.40,-30.61), Math.toRadians(-91), baseVelConstraint, baseAccelConstraint) // pickup second
-                .strafeToSplineHeading(new Vector2d(-35.9671,-27.494), Math.toRadians(-96), baseVelConstraint, baseAccelConstraint)
+                .strafeToSplineHeading(new Vector2d(-24.3088,-29.92), Math.toRadians(-126))
                 ;
 
         TrajectoryActionBuilder five = four.endTrajectory().fresh()
-                .strafeToSplineHeading(new Vector2d(-12.53, -42.74),Math.toRadians(130), baseVelConstraint, baseAccelConstraint) // deliver first sample
+                .strafeToSplineHeading(new Vector2d(-12.53, -42.74),Math.toRadians(130)) // deliver first sample
                 ;
 
         TrajectoryActionBuilder six = five.endTrajectory().fresh()
-                .strafeToLinearHeading(new Vector2d(-31.37, -38.8), Math.toRadians(-102), baseVelConstraint, baseAccelConstraint) // pickup third
+                .strafeToLinearHeading(new Vector2d(-27.3088, -40.7), Math.toRadians(-126)) // pickup third
                 ;
 
         TrajectoryActionBuilder seven = six.endTrajectory().fresh()
-                .strafeToSplineHeading(new Vector2d(-12.53, -42.74),Math.toRadians(130), baseVelConstraint, baseAccelConstraint) // deliver first sample
+                .strafeToSplineHeading(new Vector2d(-12.53, -42.74),Math.toRadians(130)) // deliver first sample
+                ;
+
+        TrajectoryActionBuilder eight = seven.endTrajectory().fresh()
+                .strafeToLinearHeading(new Vector2d(-50, -23.73),Math.toRadians(90))
+                .strafeToLinearHeading(new Vector2d(-50, -14.25),Math.toRadians(90))
+                ;
+
+        TrajectoryActionBuilder nine = eight.endTrajectory().fresh()
+                .strafeToLinearHeading(new Vector2d(-50, -13.25),Math.toRadians(80))
                 ;
 
 
@@ -111,6 +118,8 @@ public class SampleAuto extends LinearOpMode {
         Action trajFive = five.build();
         Action trajSix = six.build();
         Action trajSeven = seven.build();
+        Action trajEight = eight.build();
+        Action trajNine = nine.build();
 
         telemetry.update();
         waitForStart();
@@ -134,7 +143,7 @@ public class SampleAuto extends LinearOpMode {
 
        Actions.runBlocking(
                new SequentialAction(
-                       robot.setPivotPower(.2),
+                       robot.setPivotPower(.3),
                        robot.setIntakeRotate(.42),
                        robot.startIntakeSlow()
                )
@@ -142,7 +151,7 @@ public class SampleAuto extends LinearOpMode {
 
        Actions.runBlocking(
                new ParallelAction(
-                       robot.outtakeAfter(700),
+                       robot.outtakeAfter(550),
                        trajTwo
                )
        );
@@ -157,70 +166,95 @@ public class SampleAuto extends LinearOpMode {
        Actions.runBlocking(
                new SequentialAction(
                        robot.startIntakeSlow(),
-                       robot.extendSlidesPowerFirst(-11000, -0.4),
+                       robot.extendSlidesPowerFirst(-16000, -0.6),
                        robot.stopIntake(),
-                       robot.retractSlidesPower(-4000,1)
+                       robot.retractSlidesPower(-8000,1)
+               )
+       );
+
+       Actions.runBlocking(
+               new ParallelAction(
+                       robot.goToHighGoal(),
+                       trajThree
                )
        );
 
        Actions.runBlocking(
                new SequentialAction(
-                       robot.goToHighGoal(),
-                       trajThree,
-                       robot.goToHighGoalSlides()
-                       )
-       );
-
-       Actions.runBlocking(
-               new SequentialAction(
+                       robot.goToHighGoalSlides(),
                        robot.setIntakeRotate(FirstTeleOp.intakeRotateScore),
                        robot.outtake(),
                        robot.goToIntake(),
                        trajFour, // pickup second block
                        robot.startIntake(),
-                       robot.extendSlidesPower(-15000, -0.4),
+                       robot.extendSlidesPower(-19000, -0.6, true),
                        robot.stopIntake(),
-                       robot.retractSlidesPower(-12000,1)
+                       robot.retractSlidesPower(-8000,1)
                )
        );
 
         Actions.runBlocking(
-                new SequentialAction(
+                new ParallelAction(
                         robot.goToHighGoal(),
-                        trajFive,
-                        robot.goToHighGoalSlides()
+                        trajFive
                 )
         );
 
         Actions.runBlocking(
                 new SequentialAction(
+                        robot.goToHighGoalSlides(),
                         robot.setIntakeRotate(FirstTeleOp.intakeRotateScore),
                         robot.outtake(),
                         robot.goToIntake(),
                         trajSix, // pickup second block
                         robot.startIntake(),
-                        robot.extendSlidesPower(-13000, -0.4),
+                        robot.extendSlidesPower(-13000, -0.6, true),
                         robot.stopIntake(),
-                        robot.retractSlidesPower(-11000,1)
+                        robot.retractSlidesPower(-8000,1)
                 )
         );
 
         Actions.runBlocking(
-                new SequentialAction(
+                new ParallelAction(
                         robot.goToHighGoal(),
-                        trajSeven,
-                        robot.goToHighGoalSlides()
+                        trajSeven
                 )
         );
 
         Actions.runBlocking(
                 new SequentialAction(
+                        robot.goToHighGoalSlides(),
                         robot.setIntakeRotate(FirstTeleOp.intakeRotateScore),
                         robot.outtake(),
-                        robot.goToIntake(),
-                        robot.setAllZero()
+                        robot.goToIntake()
                 )
         );
+
+        Actions.runBlocking(
+                new SequentialAction(
+                        trajEight,
+                        robot.extendSlidesPower(-5000,-0.6,false),
+                        robot.stopIntake(),
+                        robot.retractSlidesPower(-8000,1)
+                )
+        );
+
+        Actions.runBlocking(
+                new ParallelAction(
+                        robot.startIntake(),
+                        trajNine,
+                        robot.extendSlidesPower(-18500,-0.6,true)
+                )
+        );
+
+        Actions.runBlocking(
+                new SequentialAction(
+                        robot.stopIntake(),
+                        robot.retractSlidesPower(-8000,1)
+                )
+        );
+
+
 
 
 
@@ -532,16 +566,19 @@ public class SampleAuto extends LinearOpMode {
         public class extendSlidesPower implements Action {
             private int target;
             private double power;
-            public extendSlidesPower(int target, double power)
+            private boolean intake;
+            public extendSlidesPower(int target, double power, boolean intake)
             {
                 this.target = target;
                 this.power = power;
+                this.intake = intake;
             }
             @Override
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
                 if(backLeft.getCurrentPosition() > target)
                 {
-                    intakeRotate.setPosition((1.184 * Math.pow(10, -10)) * (Math.pow(getSlidesPosition(), 2)) + (7.237 * Math.pow(10, -8)) * getSlidesPosition() + 0.055);
+                    if(intake)
+                        intakeRotate.setPosition((1.184 * Math.pow(10, -10)) * (Math.pow(getSlidesPosition(), 2)) + (7.237 * Math.pow(10, -8)) * getSlidesPosition() + 0.055);
                     setSlidePower(power);
                     return true;
                 }
@@ -553,9 +590,9 @@ public class SampleAuto extends LinearOpMode {
             }
         }
 
-        public Action extendSlidesPower(int target, double power)
+        public Action extendSlidesPower(int target, double power, boolean intake)
         {
-            return new extendSlidesPower(target, power);
+            return new extendSlidesPower(target, power, intake);
         }
 
 

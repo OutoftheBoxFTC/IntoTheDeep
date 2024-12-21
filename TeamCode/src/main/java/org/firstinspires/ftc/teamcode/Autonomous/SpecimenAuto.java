@@ -54,7 +54,6 @@ public class SpecimenAuto extends LinearOpMode {
         backLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         backLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-
         Pose2d currentPose = null;
 
         VelConstraint baseVelConstraint = new MinVelConstraint(Arrays.asList(
