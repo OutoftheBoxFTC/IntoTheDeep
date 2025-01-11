@@ -142,6 +142,8 @@ public class FirstTeleOp extends OpMode
     public static double highGear =1;
 
 
+    public static int maxExtension = -22000;
+
     /*
      * Code to run ONCE when the driver hits INIT
      */
@@ -369,9 +371,9 @@ public class FirstTeleOp extends OpMode
                 intake.setPower(0);
                 intakeRotatePos = 0.25;
             }
-            if(slidesTarget < -18500)
+            if(slidesTarget < maxExtension)
             {
-                slidesTarget = -18500;
+                slidesTarget = maxExtension;
             }
             if(slidesTarget > 0)
             {

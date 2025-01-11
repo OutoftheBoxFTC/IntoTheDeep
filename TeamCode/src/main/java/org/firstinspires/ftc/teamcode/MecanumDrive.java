@@ -306,7 +306,7 @@ public final class MecanumDrive {
 
             error = txWorldTarget.value().minusExp(pose);
 
-            if (t >= timeTrajectory.duration && error.position.norm() < 2 && error.heading.toDouble() < Math.toRadians(1)) {
+            if (t >= timeTrajectory.duration && error.position.norm() < 1 && error.heading.toDouble() < Math.toRadians(1)) {
                 leftFront.setPower(0);
                 leftBack.setPower(0);
                 rightBack.setPower(0);

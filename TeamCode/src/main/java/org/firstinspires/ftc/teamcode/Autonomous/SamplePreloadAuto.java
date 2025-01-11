@@ -34,8 +34,8 @@ import org.firstinspires.ftc.teamcode.TeleOp.FirstTeleOp;
 import java.util.Arrays;
 
 @Config
-@Autonomous(name = "SampleAuto", group = "Autonomous")
-public class SampleAuto extends LinearOpMode {
+@Autonomous(name = "SamplePreloadAuto", group = "Autonomous")
+public class SamplePreloadAuto extends LinearOpMode {
 
     public DcMotorEx backLeft;
     @Override
@@ -59,15 +59,10 @@ public class SampleAuto extends LinearOpMode {
         AccelConstraint baseAccelConstraint = new ProfileAccelConstraint(-40.0, 35.0);
 
         TrajectoryActionBuilder one = drive.actionBuilder(initialPose)
-                .strafeTo(new Vector2d(-25.8, 0), baseVelConstraint, baseAccelConstraint) // deliver preload specimen
-                ;
+                .strafeTo(new Vector2d(-16.26, 0))
+                .strafeToLinearHeading(new Vector2d(-11.22, -40.92),Math.toRadians(130))                ;
 
-        TrajectoryActionBuilder two = one.endTrajectory().fresh()
-                .waitSeconds(0.2)
-                .strafeTo(new Vector2d(-16.26, 0)) // back up (prev: 16.26)
-                ;
-
-        TrajectoryActionBuilder twohalf = two.endTrajectory().fresh()
+        TrajectoryActionBuilder twohalf = one.endTrajectory().fresh()
                 .strafeToSplineHeading(new Vector2d(-24.3088,-18.32), Math.toRadians(-126))
 
                 //.strafeToSplineHeading(new Vector2d(-28.177, -19.79), Math.toRadians(-110), baseVelConstraint, baseAccelConstraint) // move forward to first sample pickup
@@ -124,7 +119,6 @@ public class SampleAuto extends LinearOpMode {
         }
 
         Action trajOne = one.build();
-        Action trajTwo = two.build();
         Action trajTwoHalf = twohalf.build();
         Action trajThree = three.build();
         Action trajFour = four.build();
@@ -146,41 +140,27 @@ public class SampleAuto extends LinearOpMode {
         telemetry.addData("test",drive.pose.toString());
         telemetry.update();
 
-       Actions.runBlocking(
-               new ParallelAction(
-                       trajOne,
-                       robot.movePivotUp(),
-                       robot.setIntakeRotate(.7)
+        Actions.runBlocking(
+                new ParallelAction(
+                        robot.goToHighGoal(),
+                        trajOne
+                )
+        );
 
-               )
-       );
-
-       Actions.runBlocking(
-               new SequentialAction(
-                       robot.setPivotPower(.5),
-                       robot.setIntakeRotate(.42),
-                       robot.startIntakeSlow()
-               )
-       );
-
-       Actions.runBlocking(
-               new ParallelAction(
-                       robot.outtakeAfter(500),
-                       trajTwo
-               )
-       );
-
-       Actions.runBlocking(
-               new ParallelAction(
-                       robot.movePivotDown(),
-                       trajTwoHalf // pickup first thing
-               )
-       );
+        Actions.runBlocking(
+                new SequentialAction(
+                        //robot.goToHighGoalSlides(),
+                        robot.setIntakeRotate(FirstTeleOp.intakeRotateScore),
+                        robot.outtake(),
+                        robot.goToIntake(),
+                        trajTwoHalf
+                )
+        );
 
        Actions.runBlocking(
                new SequentialAction(
                        robot.startIntakeSlow(),
-                       robot.extendSlidesPowerFirst(-18000, -0.65),
+                       robot.extendSlidesPower(-18000, -0.65, true),
                        robot.stopIntake(),
                        robot.retractSlidesPower(-8000,1, false),
                        robot.setIntakeRotate(0)
