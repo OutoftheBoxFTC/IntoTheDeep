@@ -59,24 +59,24 @@ public class SamplePreloadAuto extends LinearOpMode {
         AccelConstraint baseAccelConstraint = new ProfileAccelConstraint(-40.0, 35.0);
 
         TrajectoryActionBuilder one = drive.actionBuilder(initialPose)
-                .strafeTo(new Vector2d(-16.26, 0))
+                .strafeTo(new Vector2d(-8.26, 0))
                 .strafeToLinearHeading(new Vector2d(-11.22, -40.92),Math.toRadians(130))                ;
 
         TrajectoryActionBuilder twohalf = one.endTrajectory().fresh()
-                .strafeToSplineHeading(new Vector2d(-24.3088,-18.32), Math.toRadians(-126))
+                .strafeToSplineHeading(new Vector2d(-25.8088,-18.32), Math.toRadians(-126))
 
                 //.strafeToSplineHeading(new Vector2d(-28.177, -19.79), Math.toRadians(-110), baseVelConstraint, baseAccelConstraint) // move forward to first sample pickup
                 ;
 
 
         TrajectoryActionBuilder three = twohalf.endTrajectory().fresh()
-                .strafeToLinearHeading(new Vector2d(-16.3088,-40.92), Math.toRadians(130))
-                .strafeToLinearHeading(new Vector2d(-11.22, -40.92),Math.toRadians(130)) // deliver first sample (previous: -12.53, -42.74
+                .strafeToLinearHeading(new Vector2d(-14.3088,-42.92), Math.toRadians(130)) // deliver first sample
+                //.strafeToLinearHeading(new Vector2d(-11.22, -40.92),Math.toRadians(130)) // deliver first sample (previous: -12.53, -42.74
                 ;
 
         TrajectoryActionBuilder four = three.endTrajectory().fresh()
                 //.strafeToLinearHeading(new Vector2d(-35.40,-30.61), Math.toRadians(-91), baseVelConstraint, baseAccelConstraint) // pickup second
-                .strafeToSplineHeading(new Vector2d(-25.8088,-29.92), Math.toRadians(-126))
+                .strafeToSplineHeading(new Vector2d(-25.8088,-29.92), Math.toRadians(-126)) // pickup second
                 ;
 
         TrajectoryActionBuilder five = four.endTrajectory().fresh()
@@ -97,18 +97,33 @@ public class SamplePreloadAuto extends LinearOpMode {
 //                ;
 
         TrajectoryActionBuilder eight = seven.endTrajectory().fresh()
-                .strafeToLinearHeading(new Vector2d(-30.53, -42.74),Math.toRadians(130))
-                .strafeToLinearHeading(new Vector2d(-49.327, -14.976), Math.toRadians(113))
+                .strafeToLinearHeading(new Vector2d(-30.53, -42.74),Math.toRadians(130)) // intermediate point
+                .strafeToLinearHeading(new Vector2d(-49.327, -14.976), Math.toRadians(113)) // go to submersible
                 ;
 
         TrajectoryActionBuilder nine = eight.endTrajectory().fresh()
-                .strafeToLinearHeading(new Vector2d(-48, -14.9), Math.toRadians(80))
+                .strafeToLinearHeading(new Vector2d(-48, -14.9), Math.toRadians(80)) // change angles for submersible
                 ;
 
-        TrajectoryActionBuilder ten = nine.endTrajectory().fresh()
+        TrajectoryActionBuilder ten = eight.endTrajectory().fresh()
                 .strafeToLinearHeading(new Vector2d(-50, -20.25),Math.toRadians(80))
                 .strafeToLinearHeading(new Vector2d(-12.53, -42.74),Math.toRadians(130)) // deliver fourth sample
                 ;
+
+        TrajectoryActionBuilder eleven = ten.endTrajectory().fresh()
+                .strafeToLinearHeading(new Vector2d(-30.53, -42.74),Math.toRadians(130)) // intermediate point
+                .strafeToLinearHeading(new Vector2d(-49.327, -14.976), Math.toRadians(100)) // go to submersible
+                ;
+
+//        TrajectoryActionBuilder twelve = eleven.endTrajectory().fresh()
+//                .strafeToLinearHeading(new Vector2d(-48, -14.9), Math.toRadians(70)) //
+//                ;
+
+        TrajectoryActionBuilder thirteen = eleven.endTrajectory().fresh()
+                .strafeToLinearHeading(new Vector2d(-52, -20.25),Math.toRadians(70))
+                .strafeToLinearHeading(new Vector2d(-12.53, -42.74),Math.toRadians(130)) // deliver fifth sample
+                ;
+
 
 
 
@@ -128,6 +143,8 @@ public class SamplePreloadAuto extends LinearOpMode {
         Action trajEight = eight.build();
         Action trajNine = nine.build();
         Action trajTen = ten.build();
+        Action trajEleven = eleven.build();
+        Action trajThirteen = thirteen.build();
 
         telemetry.update();
         waitForStart();
@@ -157,37 +174,37 @@ public class SamplePreloadAuto extends LinearOpMode {
                 )
         );
 
-       Actions.runBlocking(
-               new SequentialAction(
-                       robot.startIntakeSlow(),
-                       robot.extendSlidesPower(-18000, -0.65, true),
-                       robot.stopIntake(),
-                       robot.retractSlidesPower(-8000,1, false),
-                       robot.setIntakeRotate(0)
-               )
-       );
+        Actions.runBlocking(
+                new SequentialAction(
+                        robot.startIntakeSlow(),
+                        robot.extendSlidesPowerFirst(-18000, -0.65),
+                        robot.stopIntake(),
+                        robot.retractSlidesPower(-8000,1, false),
+                        robot.setIntakeRotate(0)
+                )
+        );
 
-       Actions.runBlocking(
-               new ParallelAction(
-                       robot.goToHighGoal(),
-                       trajThree
-               )
-       );
+        Actions.runBlocking(
+                new ParallelAction(
+                        robot.goToHighGoal(),
+                        trajThree
+                )
+        );
 
-       Actions.runBlocking(
-               new SequentialAction(
-                       //robot.goToHighGoalSlides(),
-                       robot.setIntakeRotate(FirstTeleOp.intakeRotateScore),
-                       robot.outtake(),
-                       robot.goToIntake(),
-                       trajFour, // pickup second block
-                       robot.startIntake(),
-                       robot.extendSlidesPower(-19000, -0.65, true),
-                       robot.stopIntake(),
-                       robot.retractSlidesPower(-8000,1, false),
-                       robot.setIntakeRotate(0)
-               )
-       );
+        Actions.runBlocking(
+                new SequentialAction(
+                        //robot.goToHighGoalSlides(),
+                        robot.setIntakeRotate(FirstTeleOp.intakeRotateScore),
+                        robot.outtake(),
+                        robot.goToIntake(),
+                        trajFour, // pickup second block
+                        robot.startIntake(),
+                        robot.extendSlidesPower(-19000, -0.65, true),
+                        robot.stopIntake(),
+                        robot.retractSlidesPower(-8000,1, false),
+                        robot.setIntakeRotate(0)
+                )
+        );
 
         Actions.runBlocking(
                 new ParallelAction(
@@ -236,13 +253,17 @@ public class SamplePreloadAuto extends LinearOpMode {
 
         Actions.runBlocking(
                 new SequentialAction(
-                        robot.extendSlidesPower(-8000,-1,false),
+                        robot.extendSlidesPower(-10000,-1,false),
                         robot.startIntake(),
+                        robot.extendSlidesPower(-12000,-0.65,true),
+                        robot.retractSlidesPower(-10000,1,false),
                         robot.extendSlidesPower(-22000,-0.65,true),
-                        robot.setIntakeRotate(.2),
                         robot.retractSlidesPower(-12000, 1, false),
-                        trajNine,
-                        robot.extendSlidesPower(-22000,-0.65,true),
+//                        trajNine,
+//                        robot.extendSlidesPower(-14000,-0.65,true),
+//                        robot.retractSlidesPower(-13000,1,false),
+//                        robot.extendSlidesPower(-22000,-0.65,true),
+//                        robot.retractSlidesPower(-12000, 1, false),
                         robot.setIntakeRotate(0.2)
                 )
         );
@@ -266,7 +287,58 @@ public class SamplePreloadAuto extends LinearOpMode {
                 new SequentialAction(
                         //robot.goToHighGoalSlides(),
                         robot.setIntakeRotate(FirstTeleOp.intakeRotateScore),
-                        robot.outtake()
+                        robot.outtake(),
+                        robot.goToIntake()
+                )
+        );
+
+        //
+
+        Actions.runBlocking(
+                new ParallelAction(
+                        trajEleven,
+                        robot.stopIntake()
+                )
+        );
+
+        Actions.runBlocking(
+                new SequentialAction(
+                        robot.extendSlidesPower(-8000,-1,false),
+                        robot.startIntake(),
+                        robot.extendSlidesPower(-10000,-0.65,true),
+                        robot.retractSlidesPower(-8000,1,false),
+                        robot.extendSlidesPower(-22000,-0.65,true),
+                        robot.retractSlidesPower(-12000, 1, false),
+//                        robot.setIntakeRotate(.2),
+//                        robot.retractSlidesPower(-12000, 1, false),
+//                        trajTwelve,
+//                        robot.extendSlidesPower(-22000,-0.65,true),
+                        robot.setIntakeRotate(0.2)
+                )
+        );
+
+        Actions.runBlocking(
+                new SequentialAction(
+                        robot.retractSlidesPower(-8000,1, false),
+                        robot.stopIntake()
+                )
+        );
+
+        Actions.runBlocking(
+                new ParallelAction(
+                        robot.setIntakeRotate(0),
+                        robot.GoToHighGoalAfter(400),
+                        trajThirteen
+                )
+        );
+
+        Actions.runBlocking(
+                new SequentialAction(
+                        //robot.goToHighGoalSlides(),
+                        robot.setIntakeRotate(FirstTeleOp.intakeRotateScore),
+                        robot.outtake(),
+                        robot.goToIntake(),
+                        robot.setAllZero()
                 )
         );
 
