@@ -53,6 +53,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 public class FirstTeleOp extends OpMode
 {
     // Declare OpMode members.
+    ElapsedTime pivotTime;
     private ElapsedTime runtime = new ElapsedTime();
     private DcMotor frontLeft = null;
     private DcMotor frontRight = null;
@@ -72,7 +73,7 @@ public class FirstTeleOp extends OpMode
     public double Kp = 0.002;
     public double Ki = 0;
     public double Kd = 0;
-    public double Kf = 0.2;
+    public double Kf = 0.3;
     ElapsedTime pivotTimer = new ElapsedTime();
     public double pivotLastError = 0;
 
@@ -105,7 +106,7 @@ public class FirstTeleOp extends OpMode
 
 
     // values
-    public static int slidesHigh = -26000;
+    public static int slidesHigh = -27000;
     public static int pivotScore = 800;
     public static double intakeRotateScore = 0.35;
 
@@ -130,6 +131,7 @@ public class FirstTeleOp extends OpMode
 
     public static int slidesTarget = 0;
 
+    public boolean overrideSlides = false;
 
     public static double intakeRotatePos = 0;
 
@@ -143,6 +145,13 @@ public class FirstTeleOp extends OpMode
 
 
     public static int maxExtension = -22000;
+
+    public double wristError = 0;
+
+    public boolean switchedToHigh = false;
+    public boolean switchedToIntake = false;
+
+    public double distancee;
 
     /*
      * Code to run ONCE when the driver hits INIT
@@ -226,7 +235,7 @@ public class FirstTeleOp extends OpMode
     public void loop() {
 
 
-        if (limitSwitch.getState() && !pressedLast)
+        if (limitSwitch.getState() && !pressedLast && runtime.seconds() > 2)
         {
             error = backLeft.getCurrentPosition();
             pressedLast = true;
@@ -245,6 +254,8 @@ public class FirstTeleOp extends OpMode
             InitialState = false;
             SpecimenState = false;
             hangState = false;
+            switchedToHigh = false;
+            switchedToIntake = false;
         }
         if(gamepad2.left_bumper && !hangState) // gamepad2 left bumper
         {
@@ -255,6 +266,8 @@ public class FirstTeleOp extends OpMode
             transitionToIntake = true;
             SpecimenState = false;
             hangState = false;
+            switchedToHigh = false;
+            switchedToIntake = false;
         }
         if(gamepad2.right_trigger > 0.1 && !hangState) // gamepad2 right trigger one press
         {
@@ -265,6 +278,8 @@ public class FirstTeleOp extends OpMode
             transitionToIntake = true;
             SpecimenState = false;
             hangState = false;
+            switchedToHigh = false;
+            switchedToIntake = false;
         }
         if(gamepad2.right_bumper && !hangState) // gamepad2 right bumper
         {
@@ -275,6 +290,8 @@ public class FirstTeleOp extends OpMode
             transitionToIntake = true;
             SpecimenState = false;
             hangState = false;
+            switchedToHigh = false;
+            switchedToIntake = false;
         }
         if(gamepad2.y && !hangState) // specimen: gamepad2 y
         {
@@ -285,6 +302,8 @@ public class FirstTeleOp extends OpMode
             transitionToIntake = true;
             SpecimenState = true;
             hangState = false;
+            switchedToHigh = false;
+            switchedToIntake = false;
         }
         if(gamepad2.a && !hangState) {
             IntakeState = false;
@@ -294,11 +313,13 @@ public class FirstTeleOp extends OpMode
             transitionToIntake = false;
             SpecimenState = false;
             hangState = true;
+            switchedToHigh = false;
+            switchedToIntake = false;
         }
 
-        pivot.setPower(PivotPIDControl(pivotTarget,backRight.getCurrentPosition()));
+         pivot.setPower(PivotPIDControl(pivotTarget,backRight.getCurrentPosition()));
 
-        if(!hangState) {
+        if(!hangState && !overrideSlides) {
             if (backRight.getCurrentPosition() > 500)
                 setSlidePower(SlideUpPIDControl(slidesTarget, getSlidesPosition()));
             else {
@@ -308,16 +329,45 @@ public class FirstTeleOp extends OpMode
 
         if(HighGoalState)
         {
+//            if(backRight.getCurrentPosition() < 800)
+//            {
+//                if(!switchedToHigh)
+//                {
+//                    pivotTime = new ElapsedTime();
+//                    switchedToHigh = true;
+//                    distancee = 800 - backRight.getCurrentPosition();
+//                }
+//                double instantTargetPosition = PIDMotionProfile(50,400, distancee, pivotTime.seconds());
+//
+//                pivot.setPower(PivotPIDControl(instantTargetPosition,backRight.getCurrentPosition()));
+//            }
+//            else
+//            {
+//                pivot.setPower(0.2);
+//            }
             pivotTarget = pivotScore;
+
             if(backRight.getCurrentPosition() > 500)
             {
                 slidesTarget = slidesHigh;
+
             }
             intakeRotatePos = intakeRotateScore;
             if(gamepad1.right_trigger > 0.1)
                 intake.setPower(-1);
             else
                 intake.setPower(0);
+
+            if(gamepad2.dpad_up)
+            {
+                error -= 100;
+            }
+            else if(gamepad2.dpad_down)
+            {
+                error += 100;
+            }
+
+
 
         }
         if(MidGoalState)
@@ -335,6 +385,22 @@ public class FirstTeleOp extends OpMode
         }
         if(IntakeState)
         {
+//            if(backRight.getCurrentPosition() > 0)
+//            {
+//                if(!switchedToIntake)
+//                {
+//                    pivotTime = new ElapsedTime();
+//                    switchedToIntake = true;
+//                    distancee = (backRight.getCurrentPosition());
+//
+//                }
+//                double instantTargetPosition = PIDMotionProfile(150,400, distancee, pivotTime.seconds());
+//
+//                pivot.setPower(PivotPIDControl(distancee-instantTargetPosition,backRight.getCurrentPosition()));
+//            }
+//            else
+//                pivot.setPower(0);
+
             pivotTarget = 0;
             if(transitionToIntake) {
                 slidesTarget = 0;
@@ -359,7 +425,7 @@ public class FirstTeleOp extends OpMode
             if(gamepad1.right_bumper)
             {
                 intake.setPower(1);
-                intakeRotatePos = (1.184*Math.pow(10,-10))*(Math.pow(getSlidesPosition(),2)) + (7.237*Math.pow(10,-8))*getSlidesPosition()+0.055;
+                intakeRotatePos = (1.184*Math.pow(10,-10))*(Math.pow(getSlidesPosition(),2)) + (7.237*Math.pow(10,-8))*getSlidesPosition()+0.055+wristError;
             }
             else if(gamepad1.x)
             {
@@ -380,15 +446,45 @@ public class FirstTeleOp extends OpMode
                 slidesTarget = 0;
             }
 
+            if(gamepad2.dpad_up)
+            {
+                wristError += 0.01;
+            }
+            else if(gamepad2.dpad_down)
+            {
+                wristError -= 0.01;
+            }
+            else if(gamepad2.dpad_right)
+            {
+                wristError = 0;
+            }
+
 
         }
         if(InitialState)
         {
+
             pivotTarget = 0;
             slidesTarget = 0;
-            if(backRight.getCurrentPosition() < 500)
-                intakeRotatePos = 1;
+            intakeRotatePos = 1;
+
+
+
             intake.setPower(0);
+
+            if(gamepad2.dpad_down)
+            {
+                overrideSlides = true;
+                setSlidePower(1);
+                if(limitSwitch.getState())
+                {
+                    error = backLeft.getCurrentPosition();
+                }
+            }
+            else {
+                overrideSlides = false;
+            }
+
         }
 
         if(SpecimenState)
@@ -483,9 +579,12 @@ public class FirstTeleOp extends OpMode
         telemetry.addData("intakeArm",intakeRotatePos);
 
 
-        telemetry.addData("slide PID encoder",getSlidesPosition());
+        telemetry.addData("slide PID encoder with error",getSlidesPosition());
+        telemetry.addData("slide PID encoder",backLeft.getCurrentPosition());
         telemetry.addData("pivot encoder",backRight.getCurrentPosition());
         telemetry.addData("error",error);
+
+        telemetry.addData("voltage canandgyro", canandgyro.getVoltage());
 
         telemetry.update();
         dashboard.getTelemetry();
@@ -555,6 +654,61 @@ public class FirstTeleOp extends OpMode
     public int getSlidesPosition()
     {
         return backLeft.getCurrentPosition() - error;
+    }
+
+    public double PIDMotionProfile(double max_acceleration, double max_velocity, double distance, double elapsed_time) {
+        // Calculate the time it takes to accelerate to max velocity
+        double acceleration_dt = max_velocity / max_acceleration;
+
+        // If we can't accelerate to max velocity in the given distance, we'll accelerate as much as possible
+        double halfway_distance = distance / 2;
+        double acceleration_distance = 0.5 * max_acceleration * Math.pow(acceleration_dt,2);
+
+        if (acceleration_distance > halfway_distance) {
+            acceleration_dt = Math.sqrt(halfway_distance / (0.5 * max_acceleration));
+        }
+
+        // recalculate max velocity based on the time we have to accelerate and decelerate
+        max_velocity = max_acceleration * acceleration_dt;
+
+        // we decelerate at the same rate as we accelerate
+        double deceleration_dt = acceleration_dt;
+
+        // calculate the time that we're at max velocity
+        double cruise_distance = distance - 2 * acceleration_distance;
+        double cruise_dt = cruise_distance / max_velocity;
+        double deceleration_time = acceleration_dt + cruise_dt;
+
+        // check if we're still in the motion profile
+        double entire_dt = acceleration_dt + cruise_dt + deceleration_dt;
+        if (elapsed_time > entire_dt) {
+            return distance;
+        }
+
+        // if we're accelerating
+        if (elapsed_time < acceleration_dt) {
+            // use the kinematic equation for acceleration
+            return 0.5 * max_acceleration * Math.pow(elapsed_time,2);
+        }
+
+        // if we're cruising
+        else if (elapsed_time < deceleration_time) {
+            acceleration_distance = 0.5 * max_acceleration * Math.pow(acceleration_dt,2);
+            double cruise_current_dt = elapsed_time - acceleration_dt;
+
+            // use the kinematic equation for constant velocity
+            return acceleration_distance + max_velocity * cruise_current_dt;
+        }
+
+        // if we're decelerating
+        else {
+            acceleration_distance = 0.5 * max_acceleration * Math.pow(acceleration_dt,2);
+            cruise_distance = max_velocity * cruise_dt;
+            deceleration_time = elapsed_time - deceleration_time;
+
+            // use the kinematic equations to calculate the instantaneous desired position
+            return acceleration_distance + cruise_distance + max_velocity * deceleration_time - 0.5 * max_acceleration * Math.pow(deceleration_time, 2);
+        }
     }
 
 }

@@ -19,6 +19,7 @@ import com.acmerobotics.roadrunner.VelConstraint;
 import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -38,16 +39,24 @@ import java.util.Arrays;
 public class SampleAutoTwo extends LinearOpMode {
 
     public DcMotorEx backLeft;
+    private AnalogInput canandgyro = null;
+
     @Override
     public void runOpMode() {
         Pose2d initialPose = new Pose2d(0, 0, Math.toRadians(0));
         MecanumDrive drive = new MecanumDrive(hardwareMap, initialPose);
         ScoreSystem robot = new ScoreSystem(hardwareMap);
-
+        //1.67
         backLeft = hardwareMap.get(DcMotorEx.class, "bl");
         backLeft.setDirection(DcMotorSimple.Direction.REVERSE);
         backLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         backLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        canandgyro = hardwareMap.get(AnalogInput.class, "canandgyro");
+
+        if(canandgyro.getVoltage() >=1.6)
+            FirstTeleOp.zeroPoint = canandgyro.getVoltage() - 1.67;
+        else if(canandgyro.getVoltage() < 1.6)
+            FirstTeleOp.zeroPoint = canandgyro.getVoltage() + 1.67;
 
         VelConstraint baseVelConstraint = new MinVelConstraint(Arrays.asList(
                 new TranslationalVelConstraint(50),
@@ -58,7 +67,7 @@ public class SampleAutoTwo extends LinearOpMode {
         TrajectoryActionBuilder one = drive.actionBuilder(initialPose)
                 .afterTime(0, robot.movePivotUp())
                 .afterTime(0,robot.setIntakeRotate(.7))
-                .strafeTo(new Vector2d(-25.8, 0), baseVelConstraint, baseAccelConstraint) // deliver preload specimen
+                .strafeTo(new Vector2d(-26.8, 0), baseVelConstraint, baseAccelConstraint) // deliver preload specimen
                 .stopAndAdd(robot.setPivotPower(.5))
                 .stopAndAdd(robot.setIntakeRotate(.42))
                 .stopAndAdd(robot.startIntakeSlow())
@@ -94,7 +103,7 @@ public class SampleAutoTwo extends LinearOpMode {
                 .stopAndAdd(robot.setIntakeRotate(0.1))
                 .strafeToLinearHeading(new Vector2d(-28.8088, -40.7), Math.toRadians(-126)) // pickup third
                 .stopAndAdd(robot.startIntake())
-                .stopAndAdd(robot.extendSlidesPower(-15500, -0.5, true))
+                .stopAndAdd(robot.extendSlidesPower(-11500, -0.5, true))
                 .stopAndAdd(robot.stopIntake())
                 .stopAndAdd(robot.retractSlidesPower(-8000,1, false))
                 .stopAndAdd(robot.setIntakeRotate(0))
@@ -107,7 +116,7 @@ public class SampleAutoTwo extends LinearOpMode {
                 .stopAndAdd(robot.goToIntake())
                 .stopAndAdd(robot.setIntakeRotate(0.2))
                 .strafeToLinearHeading(new Vector2d(-30.53, -42.74),Math.toRadians(130)) // intermediate point
-                .splineToConstantHeading(new Vector2d(-49.327, -13.976), Math.toRadians(90)) // go to submersible
+                .splineToConstantHeading(new Vector2d(-49.327, -15.976), Math.toRadians(90)) // go to submersible
                 .turnTo(Math.toRadians(90))
                 .stopAndAdd(robot.stopIntake())
                 .stopAndAdd(robot.extendSlidesPower(-10000,-1,false))
@@ -128,7 +137,7 @@ public class SampleAutoTwo extends LinearOpMode {
                 .stopAndAdd(robot.goToIntake())
                 .stopAndAdd(robot.setIntakeRotate(0.2))
                 .strafeToLinearHeading(new Vector2d(-30.53, -42.74),Math.toRadians(130)) // intermediate point
-                .strafeToLinearHeading(new Vector2d(-49.327, -13.976), Math.toRadians(110)) // go to submersible
+                .strafeToLinearHeading(new Vector2d(-49.327, -15.976), Math.toRadians(110)) // go to submersible
                 .stopAndAdd(robot.stopIntake())
                 .stopAndAdd(robot.extendSlidesPower(-10000,-1,false))
                 .stopAndAdd(robot.startIntake())

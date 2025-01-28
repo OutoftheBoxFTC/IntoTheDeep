@@ -230,6 +230,8 @@ public class Test extends OpMode
 
         telemetry.addData("intakeRotatePos", intakeRotatePos);
         telemetry.addData("gearshift", gearpos.getVoltage());
+        telemetry.addData("slides", backLeft.getCurrentPosition());
+        telemetry.addData("pivot", backRight.getCurrentPosition());
 
     }
 
