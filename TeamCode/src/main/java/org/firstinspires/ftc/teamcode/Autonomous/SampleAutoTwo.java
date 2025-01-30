@@ -209,13 +209,11 @@ public class SampleAutoTwo extends LinearOpMode {
         private DigitalChannel limitSwitch;
 
         // Pivot PID stuff
-        double pivotIntegralSum = 0;
-        public double Kp = 0.002;
-        public double Ki = 0;
-        public double Kd = 0;
-        public double Kf = 0.2;
-        ElapsedTime pivotTimer = new ElapsedTime();
-        public double pivotLastError = 0;
+        public double PivotUpKp = 0.002;
+        public double PivotUpKf = 0.2;
+
+        public double PivotDownKp = 0.0005;
+        public double PivotDownKf = 0.07;
 
         // Slide PID UP
         double upSlideIntegralSum = 0;
@@ -269,17 +267,20 @@ public class SampleAutoTwo extends LinearOpMode {
 
         }
 
-        public double PivotPIDControl(double reference, double state)
+        public double PivotDownPIDControl(double reference, double state)
         {
             double error = reference - state;
-            pivotIntegralSum += error * pivotTimer.seconds();
-            double derivative = (error - pivotLastError) / pivotTimer.seconds();
-            pivotLastError = error;
 
-            pivotTimer.reset();
+            double output = (error*PivotDownKp);
+            return output+PivotDownKf;
 
-            double output = (error*Kp) + (derivative*Kd) + (pivotIntegralSum*Ki);
-            return output+Kf;
+        }
+
+        public double PivotUpPIDControl(double reference, double state)
+        {
+            double error = reference - state;
+
+            return (error*PivotUpKp) + PivotUpKf;
 
         }
 
@@ -458,7 +459,7 @@ public class SampleAutoTwo extends LinearOpMode {
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
                 if(backRight.getCurrentPosition() < 800)
                 {
-                    pivot.setPower(PivotPIDControl(800,backRight.getCurrentPosition()));
+                    pivot.setPower(PivotUpPIDControl(800,backRight.getCurrentPosition()));
                     return true;
                 }
                 else
@@ -480,7 +481,7 @@ public class SampleAutoTwo extends LinearOpMode {
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
                 if(backRight.getCurrentPosition() > 100)
                 {
-                    pivot.setPower(PivotPIDControl(0,backRight.getCurrentPosition()));
+                    pivot.setPower(PivotDownPIDControl(0,backRight.getCurrentPosition()));
                     return true;
                 }
                 else
@@ -553,7 +554,7 @@ public class SampleAutoTwo extends LinearOpMode {
         {
             @Override
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-                pivot.setPower(PivotPIDControl(FirstTeleOp.pivotScore, backRight.getCurrentPosition()));
+                pivot.setPower(PivotUpPIDControl(FirstTeleOp.pivotScore, backRight.getCurrentPosition()));
 
                 if(backRight.getCurrentPosition() > 800) {
                     //setSlidePower(SlideUpPIDControl(-27000, getSlidesPosition()));
@@ -604,7 +605,7 @@ public class SampleAutoTwo extends LinearOpMode {
                     return false;
                 }
                 else {
-                    pivot.setPower(PivotPIDControl(20, backRight.getCurrentPosition()));
+                    pivot.setPower(PivotDownPIDControl(20, backRight.getCurrentPosition()));
                     setSlidePower(SlideUpPIDControl(-200, getSlidesPosition()));
                     return false;
                 }
@@ -691,7 +692,7 @@ public class SampleAutoTwo extends LinearOpMode {
                 }
 
                 else {
-                    pivot.setPower(PivotPIDControl(FirstTeleOp.pivotScore, backRight.getCurrentPosition()));
+                    pivot.setPower(PivotUpPIDControl(FirstTeleOp.pivotScore, backRight.getCurrentPosition()));
 
                     if(backRight.getCurrentPosition() > 600) {
                         //setSlidePower(SlideUpPIDControl(-27000, getSlidesPosition()));

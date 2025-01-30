@@ -176,16 +176,11 @@ public class Test extends OpMode
 
         zeroPoint = canandgyro.getVoltage();
 
-        intake = hardwareMap.get(CRServo.class, "intake");
         intakeRotate = hardwareMap.get(Servo.class, "intakeRotate");
 
         // Tell the driver that initialization is complete.
         telemetry.addData("Status", "Initialized");
 
-        driver = new Controller(gamepad1);
-
-        gearshift = hardwareMap.get(Servo.class, "gearShift");
-        gearpos = hardwareMap.get(AnalogInput.class, "gearpos");
     }
 
     /*
@@ -213,19 +208,17 @@ public class Test extends OpMode
     @Override
     public void loop() {
 
-        gearshift.setPosition(gearShiftTarget);
-        intake.setPower(.3);
+        //intake.setPower(.3);
 
-        if(driver.dpadUpOnce())
-        {
-            intakeRotatePos += .05;
-        }
-        if(driver.dpadDownOnce())
-        {
-            intakeRotatePos -= .05;
-        }
+//        if(driver.dpadUpOnce())
+//        {
+//            intakeRotatePos += .05;
+//        }
+//        if(driver.dpadDownOnce())
+//        {
+//            intakeRotatePos -= .05;
+//        }
 
-        driver.update();
         intakeRotate.setPosition(intakeRotatePos);
 
         telemetry.addData("intakeRotatePos", intakeRotatePos);

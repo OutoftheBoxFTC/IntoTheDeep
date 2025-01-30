@@ -69,30 +69,19 @@ public class FirstTeleOp extends OpMode
 
     private DigitalChannel limitSwitch = null;
     // Pivot PID stuff
-    double pivotIntegralSum = 0;
-    public double Kp = 0.002;
-    public double Ki = 0;
-    public double Kd = 0;
-    public double Kf = 0.3;
-    ElapsedTime pivotTimer = new ElapsedTime();
-    public double pivotLastError = 0;
+    public double PivotUpKp = 0.002;
+    public static double PivotUpKf = 0.15;
+
+    public double PivotDownKp = 0.0005;
+    public double PivotDownKf = 0.07;
+
 
     // Slide PID DOWN
-    double downSlideIntegralSum = 0;
-    public double downSlideKp = 0.0001;
-    public double downSlideKi = 0;
-    public double downSlideKd = 0;
-    ElapsedTime downSlideTimer = new ElapsedTime();
-    public double downSlideLastError = 0;
+    public static double downSlideKp = 0.0003;
 
     // Slide PID UP
-    double upSlideIntegralSum = 0;
-    public double upSlideKp = 0.0001;
-    public double upSlideKi = 0;
-    public double upSlideKd = 0;
-    public double upSlideKf = -0.2;
-    ElapsedTime upSlideTimer = new ElapsedTime();
-    public double upSlideLastError = 0;
+    public static double upSlideKp = 0.0006;
+    public static double upSlideKf = -0.1;
 
 
     // States
@@ -107,7 +96,7 @@ public class FirstTeleOp extends OpMode
 
     // values
     public static int slidesHigh = -27000;
-    public static int pivotScore = 800;
+    public static int pivotScore = 870;
     public static double intakeRotateScore = 0.35;
 
     public static int pivotSpecimen = 500;
@@ -150,8 +139,6 @@ public class FirstTeleOp extends OpMode
 
     public boolean switchedToHigh = false;
     public boolean switchedToIntake = false;
-
-    public double distancee;
 
     /*
      * Code to run ONCE when the driver hits INIT
@@ -224,8 +211,6 @@ public class FirstTeleOp extends OpMode
     public void start()
     {
         runtime.reset();
-        pivotTimer.reset();
-        downSlideTimer.reset();
     }
 
     /*
@@ -317,7 +302,7 @@ public class FirstTeleOp extends OpMode
             switchedToIntake = false;
         }
 
-         pivot.setPower(PivotPIDControl(pivotTarget,backRight.getCurrentPosition()));
+        //pivot.setPower(PivotPIDControl(pivotTarget,backRight.getCurrentPosition()));
 
         if(!hangState && !overrideSlides) {
             if (backRight.getCurrentPosition() > 500)
@@ -329,30 +314,34 @@ public class FirstTeleOp extends OpMode
 
         if(HighGoalState)
         {
-//            if(backRight.getCurrentPosition() < 800)
+//            if(backRight.getCurrentPosition() < pivotScore)
 //            {
 //                if(!switchedToHigh)
 //                {
 //                    pivotTime = new ElapsedTime();
 //                    switchedToHigh = true;
-//                    distancee = 800 - backRight.getCurrentPosition();
+//                    distancee = pivotScore - backRight.getCurrentPosition();
 //                }
-//                double instantTargetPosition = PIDMotionProfile(50,400, distancee, pivotTime.seconds());
-//
+//                double instantTargetPosition = PIDMotionProfile(150,300, distancee, pivotTime.seconds());
 //                pivot.setPower(PivotPIDControl(instantTargetPosition,backRight.getCurrentPosition()));
 //            }
 //            else
 //            {
-//                pivot.setPower(0.2);
+//                pivot.setPower(PivotPIDControl(pivotScore, backRight.getCurrentPosition()));
 //            }
             pivotTarget = pivotScore;
+            pivot.setPower(PivotUpPIDControl(pivotTarget,backRight.getCurrentPosition()));
 
-            if(backRight.getCurrentPosition() > 500)
+            if(backRight.getCurrentPosition() > 740)
             {
-                slidesTarget = slidesHigh;
-
+                slidesTarget = (int) (63.265*backRight.getCurrentPosition() - 80106.12);
+                intakeRotatePos = -0.00306122*backRight.getCurrentPosition() +2.92449;
             }
-            intakeRotatePos = intakeRotateScore;
+            else if (backRight.getCurrentPosition() > 500 && backRight.getCurrentPosition() < 740){
+                slidesTarget = slidesHigh;
+            }
+            else
+                intakeRotatePos = intakeRotateScore;
             if(gamepad1.right_trigger > 0.1)
                 intake.setPower(-1);
             else
@@ -373,6 +362,7 @@ public class FirstTeleOp extends OpMode
         if(MidGoalState)
         {
             pivotTarget = pivotScore;
+            pivot.setPower(PivotUpPIDControl(pivotTarget,backRight.getCurrentPosition()));
             if(backRight.getCurrentPosition() > 500)
             {
                 slidesTarget = -5453;
@@ -385,22 +375,23 @@ public class FirstTeleOp extends OpMode
         }
         if(IntakeState)
         {
-//            if(backRight.getCurrentPosition() > 0)
+//            if(backRight.getCurrentPosition() > 30)
 //            {
 //                if(!switchedToIntake)
 //                {
-//                    pivotTime = new ElapsedTime();
+//                    pivotTime.reset();
 //                    switchedToIntake = true;
-//                    distancee = (backRight.getCurrentPosition());
+//                    distancee = backRight.getCurrentPosition();
 //
 //                }
-//                double instantTargetPosition = PIDMotionProfile(150,400, distancee, pivotTime.seconds());
+//                double instantTargetPosition = PIDMotionProfile(100,300, distancee, pivotTime.seconds());
 //
 //                pivot.setPower(PivotPIDControl(distancee-instantTargetPosition,backRight.getCurrentPosition()));
 //            }
 //            else
-//                pivot.setPower(0);
+//                pivot.setPower(PivotPIDControl(0,backRight.getCurrentPosition()));
 
+            pivot.setPower(PivotDownPIDControl(pivotTarget,backRight.getCurrentPosition()));
             pivotTarget = 0;
             if(transitionToIntake) {
                 slidesTarget = 0;
@@ -460,14 +451,19 @@ public class FirstTeleOp extends OpMode
             }
 
 
+
         }
         if(InitialState)
         {
 
             pivotTarget = 0;
+            pivot.setPower(PivotDownPIDControl(pivotTarget,backRight.getCurrentPosition()));
             slidesTarget = 0;
-            intakeRotatePos = 1;
 
+            if(backRight.getCurrentPosition() > 500)
+                intakeRotatePos = 0;
+            else
+                intakeRotatePos = 1;
 
 
             intake.setPower(0);
@@ -576,8 +572,6 @@ public class FirstTeleOp extends OpMode
         }
 
         intakeRotate.setPosition(intakeRotatePos);
-        telemetry.addData("intakeArm",intakeRotatePos);
-
 
         telemetry.addData("slide PID encoder with error",getSlidesPosition());
         telemetry.addData("slide PID encoder",backLeft.getCurrentPosition());
@@ -586,12 +580,19 @@ public class FirstTeleOp extends OpMode
 
         telemetry.addData("voltage canandgyro", canandgyro.getVoltage());
 
+        telemetry.addData("reference",backRight.getCurrentPosition());
+        telemetry.addData("target",pivotTarget);
+
+        telemetry.addData("sl1", slideLeft1.getCurrent(CurrentUnit.AMPS));
+        telemetry.addData("sl2", slideLeft2.getCurrent(CurrentUnit.AMPS));
+        telemetry.addData("sr", slideRight.getCurrent(CurrentUnit.AMPS));
+        telemetry.addData("pivot", pivot.getCurrent(CurrentUnit.AMPS));
+
         telemetry.update();
         dashboard.getTelemetry();
 
-        dashboardTelemetry.addData("error",error);
-
     }
+
 
     /*
      * Code to run ONCE after the driver hits STOP
@@ -601,30 +602,28 @@ public class FirstTeleOp extends OpMode
 
     }
 
-    public double PivotPIDControl(double reference, double state)
+    public double PivotDownPIDControl(double reference, double state)
     {
         double error = reference - state;
-        pivotIntegralSum += error * pivotTimer.seconds();
-        double derivative = (error - pivotLastError) / pivotTimer.seconds();
-        pivotLastError = error;
 
-        pivotTimer.reset();
+        double output = (error*PivotDownKp);
+        return output+PivotDownKf;
 
-        double output = (error*Kp) + (derivative*Kd) + (pivotIntegralSum*Ki);
-        return output+Kf;
+    }
+
+    public double PivotUpPIDControl(double reference, double state)
+    {
+        double error = reference - state;
+
+        return (error*PivotUpKp) + PivotUpKf;
 
     }
 
     public double SlideDownPIDControl(double reference, double state)
     {
         double error = reference - state;
-        downSlideIntegralSum += error * downSlideTimer.seconds();
-        double derivative = (error - downSlideLastError) / downSlideTimer.seconds();
-        downSlideLastError = error;
 
-        downSlideTimer.reset();
-
-        double output = (error*downSlideKp) + (derivative*downSlideKd) + (downSlideIntegralSum*downSlideKi);
+        double output = (error*downSlideKp);
         return output;
 
     }
@@ -632,13 +631,8 @@ public class FirstTeleOp extends OpMode
     public double SlideUpPIDControl(double reference, double state)
     {
         double error = reference - state;
-        upSlideIntegralSum += error * upSlideTimer.seconds();
-        double derivative = (error - upSlideLastError) / upSlideTimer.seconds();
-        upSlideLastError = error;
 
-        upSlideTimer.reset();
-
-        double output = (error*upSlideKp) + (derivative*upSlideKd) + (upSlideIntegralSum*upSlideKi);
+        double output = (error*upSlideKp);
         return output+upSlideKf;
 
     }
