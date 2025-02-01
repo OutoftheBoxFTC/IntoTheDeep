@@ -159,6 +159,9 @@ public class Test extends OpMode
         pivot.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         pivot.setDirection(DcMotorSimple.Direction.REVERSE);
 
+        slideLeft1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        slideLeft1.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
 
         canandgyro = hardwareMap.get(AnalogInput.class, "canandgyro");
 
@@ -222,9 +225,9 @@ public class Test extends OpMode
         intakeRotate.setPosition(intakeRotatePos);
 
         telemetry.addData("intakeRotatePos", intakeRotatePos);
-        telemetry.addData("gearshift", gearpos.getVoltage());
         telemetry.addData("slides", backLeft.getCurrentPosition());
         telemetry.addData("pivot", backRight.getCurrentPosition());
+        telemetry.addData("perp", slideLeft1.getCurrentPosition());
 
     }
 

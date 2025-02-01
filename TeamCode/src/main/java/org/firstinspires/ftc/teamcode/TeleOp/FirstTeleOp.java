@@ -80,7 +80,7 @@ public class FirstTeleOp extends OpMode
     public static double downSlideKp = 0.0003;
 
     // Slide PID UP
-    public static double upSlideKp = 0.0006;
+    public static double upSlideKp = 0.0003;
     public static double upSlideKf = -0.1;
 
 
@@ -220,7 +220,7 @@ public class FirstTeleOp extends OpMode
     public void loop() {
 
 
-        if (limitSwitch.getState() && !pressedLast && runtime.seconds() > 2)
+        if (limitSwitch.getState() && !pressedLast && runtime.seconds() > 2 && (!IntakeState && !(gamepad1.right_trigger > 0.1)))
         {
             error = backLeft.getCurrentPosition();
             pressedLast = true;
@@ -334,7 +334,7 @@ public class FirstTeleOp extends OpMode
 
             if(backRight.getCurrentPosition() > 740)
             {
-                slidesTarget = (int) (63.265*backRight.getCurrentPosition() - 80106.12);
+                slidesTarget = (int) (63.265*backRight.getCurrentPosition() - 81106.12);
                 intakeRotatePos = -0.00306122*backRight.getCurrentPosition() +2.92449;
             }
             else if (backRight.getCurrentPosition() > 500 && backRight.getCurrentPosition() < 740){
@@ -399,24 +399,18 @@ public class FirstTeleOp extends OpMode
             }
             // right trigger extend, left trigger retract
             // right button intake
-            if(gamepad1.left_bumper) {
-                if (gamepad1.right_trigger > 0.1) {
-                    slidesTarget -= 600;
-                } else if (gamepad1.left_trigger > 0.1) {
-                    slidesTarget += 600;
-                }
-            } else
-            {
-                if (gamepad1.right_trigger > 0.1) {
-                    slidesTarget -= 1000;
-                } else if (gamepad1.left_trigger > 0.1) {
-                    slidesTarget += 1000;
-                }
+
+            if (gamepad1.right_trigger > 0.1) {
+                slidesTarget -= 1300;
+            } else if (gamepad1.left_trigger > 0.1) {
+                slidesTarget += 1300;
             }
+
             if(gamepad1.right_bumper)
             {
                 intake.setPower(1);
-                intakeRotatePos = (1.184*Math.pow(10,-10))*(Math.pow(getSlidesPosition(),2)) + (7.237*Math.pow(10,-8))*getSlidesPosition()+0.055+wristError;
+                intakeRotatePos = (1.184*Math.pow(10,-10))*(Math.pow(getSlidesPosition(),2)) + (7.237*Math.pow(10,-8))*getSlidesPosition()+0.040+wristError; // negative goes down
+                //intakeRotatePos = (4.6583*Math.pow(10,-11))*Math.pow(getSlidesPosition(),2) + 8.51223*Math.pow(10,-7)*getSlidesPosition() + 0.035;
             }
             else if(gamepad1.x)
             {
@@ -514,17 +508,12 @@ public class FirstTeleOp extends OpMode
             else {
                 if (gamepad2.right_trigger > 0.1 && getSlidesPosition() < 0) {
                     setSlidePower(-1);
-                } else if (gamepad2.left_trigger > 0.1 && getSlidesPosition() > -20000) {
+                } else if (gamepad2.left_trigger > 0.1 && getSlidesPosition() > -26000) {
                     setSlidePower(1);
                 } else {
                     setSlidePower(0);
                 }
             }
-
-            if(slidesTarget < -20000)
-                slidesTarget = -20000;
-            else if(slidesTarget > 0)
-                slidesTarget = 0;
 
         }
 

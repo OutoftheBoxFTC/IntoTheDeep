@@ -72,34 +72,34 @@ public class SpecimenAuto extends LinearOpMode {
                 ;
 
         TrajectoryActionBuilder twohalf = two.endTrajectory().fresh()
-                .strafeToLinearHeading(new Vector2d(-21.3088,18.32), Math.toRadians(126)) // 138.1move forward to first sample pickup
+                .strafeToLinearHeading(new Vector2d(-23.3088,18.32), Math.toRadians(126)) // 138.1move forward to first sample pickup
                 ;
 
 
         TrajectoryActionBuilder three = twohalf.endTrajectory().fresh()
-                .turnTo(Math.toRadians(0))
+                .turnTo(Math.toRadians(60))
                 //.strafeToLinearHeading(new Vector2d(-16.9, 24.2),Math.toRadians(48.6)) // deliver first sample
                 //.strafeToLinearHeading(new Vector2d(-21.3087,18.32), Math.toRadians(40))
                 //.lineToXLinearHeading(-19,Math.toRadians(40))
                 ;
 
         TrajectoryActionBuilder four = three.endTrajectory().fresh()
-                .strafeToLinearHeading(new Vector2d(-22.8088,29.92), Math.toRadians(126)) // pickup second
+                .strafeToLinearHeading(new Vector2d(-23.8088,29.92), Math.toRadians(126)) // pickup second
                 ;
 
         TrajectoryActionBuilder five = four.endTrajectory().fresh()
-                .turnTo(Math.toRadians(0))
+                .turnTo(Math.toRadians(60))
                 //.strafeToLinearHeading(new Vector2d(-19.2, 31.1),Math.toRadians(50)) // deliver second
                 //.strafeToLinearHeading(new Vector2d(-22.8087,29.92), Math.toRadians(40))
                 //.lineToXLinearHeading(-19,Math.toRadians(40))
                 ;
 
         TrajectoryActionBuilder six = five.endTrajectory().fresh()
-                .strafeToLinearHeading(new Vector2d(-25.8088, 40.7), Math.toRadians(126)) // pickup third
+                .strafeToLinearHeading(new Vector2d(-23.8088, 40.7), Math.toRadians(126)) // pickup third
                 ;
 
         TrajectoryActionBuilder seven = six.endTrajectory().fresh()
-                .turnTo(Math.toRadians(0))
+                .turnTo(Math.toRadians(20))
                 //.strafeToLinearHeading(new Vector2d(-19.2, 38),Math.toRadians(55)) // deliver third
                 //.strafeToLinearHeading(new Vector2d(-19.2001, 38),Math.toRadians(40))
                 //.lineToXLinearHeading(-19,Math.toRadians(40))
@@ -112,7 +112,7 @@ public class SpecimenAuto extends LinearOpMode {
 
         TrajectoryActionBuilder nine = eight.endTrajectory().fresh()
                 .waitSeconds(0.1)
-                .strafeToLinearHeading(new Vector2d(-26, -3), Math.toRadians(0))
+                .strafeToLinearHeading(new Vector2d(-28, -3), Math.toRadians(0))
                 ;
 
         TrajectoryActionBuilder ninehalf = nine.endTrajectory().fresh()
@@ -121,13 +121,13 @@ public class SpecimenAuto extends LinearOpMode {
                 ;
 
         TrajectoryActionBuilder ten = ninehalf.endTrajectory().fresh()
-                .strafeToConstantHeading(new Vector2d(-12, 28))
+                .strafeToLinearHeading(new Vector2d(-14, 28), Math.toRadians(0))
                 //.strafeTo(new Vector2d(-5, 28))
                 ;
 
         TrajectoryActionBuilder eleven = ten.endTrajectory().fresh()
                 .waitSeconds(0.1)
-                .strafeTo(new Vector2d(-26.8, -6))
+                .strafeTo(new Vector2d(-30, -6))
                 ;
         TrajectoryActionBuilder elevenhalf = eleven.endTrajectory().fresh()
                 .waitSeconds(0.2)
@@ -136,13 +136,13 @@ public class SpecimenAuto extends LinearOpMode {
 
 
         TrajectoryActionBuilder twelve = elevenhalf.endTrajectory().fresh()
-                .strafeToConstantHeading(new Vector2d(-12, 28))
+                .strafeToLinearHeading(new Vector2d(-16, 28), Math.toRadians(0))
                 //.strafeTo(new Vector2d(-5, 28))
                 ;
 
         TrajectoryActionBuilder thirteen = twelve.endTrajectory().fresh()
                 .waitSeconds(0.1)
-                .strafeTo(new Vector2d(-26.8, -9))
+                .strafeTo(new Vector2d(-31, -9))
                 ;
 
         TrajectoryActionBuilder thirteenhalf = thirteen.endTrajectory().fresh()
@@ -151,13 +151,13 @@ public class SpecimenAuto extends LinearOpMode {
                 ;
 
         TrajectoryActionBuilder fourteen = thirteenhalf.endTrajectory().fresh()
-                .strafeToConstantHeading(new Vector2d(-12, 28))
+                .strafeToLinearHeading(new Vector2d(-18, 28), Math.toRadians(0))
                 //.strafeTo(new Vector2d(-5, 28))
                 ;
 
         TrajectoryActionBuilder fifteen = fourteen.endTrajectory().fresh()
                 .waitSeconds(0.1)
-                .strafeTo(new Vector2d(-26.8, -12))
+                .strafeTo(new Vector2d(-32, -12))
                 ;
 
         TrajectoryActionBuilder fifteenhalf = fifteen.endTrajectory().fresh()
@@ -216,14 +216,14 @@ public class SpecimenAuto extends LinearOpMode {
        Actions.runBlocking(
                new SequentialAction(
                        robot.setPivotPower(.4),
-                       robot.setIntakeRotate(.42),
+                       robot.setIntakeRotate(.40),
                        robot.startIntakeSlow()
                )
        );
 
        Actions.runBlocking(
                new ParallelAction(
-                       robot.outtakeAfter(600),
+                       robot.outtakeAfter(500),
                        trajTwo
                )
        );
@@ -240,7 +240,7 @@ public class SpecimenAuto extends LinearOpMode {
        Actions.runBlocking(
                new SequentialAction(
                        robot.startIntake(), // start intake
-                       robot.extendSlidesPower(-22000, -0.5, true),
+                       robot.extendSlidesPower(-22000, -0.9, true),
                        robot.stopIntake(),
                        robot.retractSlidesPower(-13000, 1),
                        trajThree, // deliver first block
@@ -249,7 +249,7 @@ public class SpecimenAuto extends LinearOpMode {
                        robot.retractSlidesPower(-13000, 1),
                        trajFour, // pickup second block
                        robot.startIntake(),
-                       robot.extendSlidesPower(-18000, -0.5, true),
+                       robot.extendSlidesPower(-18000, -0.8, true),
                        robot.stopIntake(),
                        robot.retractSlidesPower(-8000, 1),
                        trajFive, // deliver second block
@@ -258,9 +258,9 @@ public class SpecimenAuto extends LinearOpMode {
                        robot.retractSlidesPower(-13000, 1),
                        trajSix, // pickup third block
                        robot.startIntake(),
-                       robot.extendSlidesPower(-16000, -0.5, true),
+                       robot.extendSlidesPower(-15000, -0.8, true),
                        robot.stopIntake(),
-                       robot.retractSlidesPower(-13000, 1),
+                       robot.retractSlidesPower(-10000, 1),
                        trajSeven, // deliver third block
                        robot.extendSlidesPower(-22000, -1, true),
                        robot.outtake(),
@@ -273,18 +273,23 @@ public class SpecimenAuto extends LinearOpMode {
                        robot.setSlidesPowerX(.4),
                        robot.startIntake(),
                        trajEight,
-                       robot.setIntakeRotate(0.6)
+                       robot.setIntakeRotate(0.58)
                )
        );
 
        Actions.runBlocking(
                new SequentialAction(
-                       robot.extendSlidesPower(-13000, -0.5, false),
+                       //robot.extendSlidesPower(-11000, -0.8, false),
+                       robot.setSlidesPowerX(-0.8),
+                       robot.pause(500),
+                       robot.setSlidesPowerX(0),
                        robot.setPivotPower(.2),
-                       robot.pause(200),
+                       robot.pause(1000),
                        robot.stopIntake(),
-                       robot.retractSlidesPower(-700, 1),
-                       robot.setSlidesPowerX(.1)
+                       //robot.retractSlidesPower(-700, 1),
+                       robot.setSlidesPowerX(1),
+                       robot.pause(200),
+                       robot.setSlidesPowerX(.3)
                )
        );
 
@@ -299,8 +304,8 @@ public class SpecimenAuto extends LinearOpMode {
 
         Actions.runBlocking(
                 new SequentialAction(
-                        robot.setPivotPower(.4),
-                        robot.setIntakeRotate(.42),
+                        robot.setPivotPower(.6),
+                        robot.setIntakeRotate(.4),
                         robot.startIntakeSlow()
                 )
         );
@@ -319,18 +324,23 @@ public class SpecimenAuto extends LinearOpMode {
                         robot.movePivotDown(),
                         robot.startIntake(),
                         trajTen,
-                        robot.setIntakeRotate(0.6)
+                        robot.setIntakeRotate(0.58)
                 )
         );
 
         Actions.runBlocking(
                 new SequentialAction(
-                        robot.extendSlidesPower(-13000, -0.5, false),
+                        robot.setSlidesPowerX(-0.8),
+                        robot.pause(500),
+                        robot.setSlidesPowerX(0),
+                        //robot.extendSlidesPower(-11000, -0.8, false),
                         robot.setPivotPower(.2),
-                        robot.pause(200),
+                        robot.pause(1000),
                         robot.stopIntake(),
-                        robot.retractSlidesPower(-700, 1),
-                        robot.setSlidesPowerX(.1)
+                        robot.setSlidesPowerX(1),
+                        robot.pause(200),
+                        //robot.retractSlidesPower(-700, 1),
+                        robot.setSlidesPowerX(.3)
                 )
         );
 
@@ -346,8 +356,8 @@ public class SpecimenAuto extends LinearOpMode {
 
         Actions.runBlocking(
                 new SequentialAction(
-                        robot.setPivotPower(.4),
-                        robot.setIntakeRotate(.42),
+                        robot.setPivotPower(.6),
+                        robot.setIntakeRotate(.4),
                         robot.startIntakeSlow()
                 )
         );
@@ -366,18 +376,23 @@ public class SpecimenAuto extends LinearOpMode {
                         robot.movePivotDown(),
                         robot.startIntake(),
                         trajTwelve,
-                        robot.setIntakeRotate(0.6)
+                        robot.setIntakeRotate(0.58)
                 )
         );
 
         Actions.runBlocking(
                 new SequentialAction(
-                        robot.extendSlidesPower(-13000, -0.5, false),
+                        //robot.extendSlidesPower(-9000, -0.8, false),
+                        robot.setSlidesPowerX(-0.8),
+                        robot.pause(500),
+                        robot.setSlidesPowerX(0),
                         robot.setPivotPower(.2),
-                        robot.pause(200),
+                        robot.pause(1000),
                         robot.stopIntake(),
-                        robot.retractSlidesPower(-700, 1),
-                        robot.setSlidesPowerX(.1)
+                        //robot.retractSlidesPower(-700, 1),
+                        robot.setSlidesPowerX(1),
+                        robot.pause(200),
+                        robot.setSlidesPowerX(.3)
                 )
         );
 
@@ -393,8 +408,8 @@ public class SpecimenAuto extends LinearOpMode {
 
         Actions.runBlocking(
                 new SequentialAction(
-                        robot.setPivotPower(.4),
-                        robot.setIntakeRotate(.42),
+                        robot.setPivotPower(.6),
+                        robot.setIntakeRotate(.4),
                         robot.startIntakeSlow()
                 )
         );
@@ -413,18 +428,23 @@ public class SpecimenAuto extends LinearOpMode {
                         robot.movePivotDown(),
                         robot.startIntake(),
                         trajFourteen,
-                        robot.setIntakeRotate(0.56)
+                        robot.setIntakeRotate(0.58)
                 )
         );
 
         Actions.runBlocking(
                 new SequentialAction(
-                        robot.extendSlidesPower(-13000, -0.5, false),
+                        //robot.extendSlidesPower(-9000, -0.8, false),
+                        robot.setSlidesPowerX(-0.8),
+                        robot.pause(500),
+                        robot.setSlidesPowerX(0),
                         robot.setPivotPower(.2),
-                        robot.pause(200),
+                        robot.pause(1000),
                         robot.stopIntake(),
-                        robot.retractSlidesPower(-700, 1),
-                        robot.setSlidesPowerX(.1)
+                        //robot.retractSlidesPower(-700, 1),
+                        robot.setSlidesPowerX(1),
+                        robot.pause(200),
+                        robot.setSlidesPowerX(.3)
                 )
         );
 
@@ -439,8 +459,8 @@ public class SpecimenAuto extends LinearOpMode {
 
         Actions.runBlocking(
                 new SequentialAction(
-                        robot.setPivotPower(.4),
-                        robot.setIntakeRotate(.42),
+                        robot.setPivotPower(.6),
+                        robot.setIntakeRotate(.4),
                         robot.startIntakeSlow()
                 )
         );

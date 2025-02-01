@@ -19,6 +19,7 @@ import com.acmerobotics.roadrunner.VelConstraint;
 import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -34,23 +35,28 @@ import org.firstinspires.ftc.teamcode.TeleOp.FirstTeleOp;
 import java.util.Arrays;
 
 @Config
-@Autonomous(name = "SamplePreloadAuto", group = "Autonomous")
+@Autonomous(name = "SampleAutoPreload", group = "Autonomous")
 public class SamplePreloadAuto extends LinearOpMode {
 
     public DcMotorEx backLeft;
+    private AnalogInput canandgyro = null;
+
     @Override
     public void runOpMode() {
         Pose2d initialPose = new Pose2d(0, 0, Math.toRadians(0));
         MecanumDrive drive = new MecanumDrive(hardwareMap, initialPose);
         ScoreSystem robot = new ScoreSystem(hardwareMap);
-
+        //1.67
         backLeft = hardwareMap.get(DcMotorEx.class, "bl");
         backLeft.setDirection(DcMotorSimple.Direction.REVERSE);
         backLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         backLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        canandgyro = hardwareMap.get(AnalogInput.class, "canandgyro");
 
-
-        Pose2d currentPose = null;
+        if(canandgyro.getVoltage() >=1.6)
+            FirstTeleOp.zeroPoint = canandgyro.getVoltage() - 1.67;
+        else if(canandgyro.getVoltage() < 1.6)
+            FirstTeleOp.zeroPoint = canandgyro.getVoltage() + 1.67;
 
         VelConstraint baseVelConstraint = new MinVelConstraint(Arrays.asList(
                 new TranslationalVelConstraint(50),
@@ -59,97 +65,108 @@ public class SamplePreloadAuto extends LinearOpMode {
         AccelConstraint baseAccelConstraint = new ProfileAccelConstraint(-40.0, 35.0);
 
         TrajectoryActionBuilder one = drive.actionBuilder(initialPose)
+                .strafeTo(new Vector2d(-26.8, 0), baseVelConstraint, baseAccelConstraint) // deliver preload specimen
+                .strafeTo(new Vector2d(-16.26, 0))
+                .afterTime(0, robot.goToHighGoal())
+                .afterTime(0, robot.setIntakeRotate(FirstTeleOp.intakeRotateScore))
                 .strafeTo(new Vector2d(-8.26, 0))
-                .strafeToLinearHeading(new Vector2d(-11.22, -40.92),Math.toRadians(130))                ;
-
-        TrajectoryActionBuilder twohalf = one.endTrajectory().fresh()
-                .strafeToSplineHeading(new Vector2d(-25.8088,-18.32), Math.toRadians(-126))
-
-                //.strafeToSplineHeading(new Vector2d(-28.177, -19.79), Math.toRadians(-110), baseVelConstraint, baseAccelConstraint) // move forward to first sample pickup
-                ;
-
-
-        TrajectoryActionBuilder three = twohalf.endTrajectory().fresh()
-                .strafeToLinearHeading(new Vector2d(-14.3088,-42.92), Math.toRadians(130)) // deliver first sample
-                //.strafeToLinearHeading(new Vector2d(-11.22, -40.92),Math.toRadians(130)) // deliver first sample (previous: -12.53, -42.74
-                ;
-
-        TrajectoryActionBuilder four = three.endTrajectory().fresh()
-                //.strafeToLinearHeading(new Vector2d(-35.40,-30.61), Math.toRadians(-91), baseVelConstraint, baseAccelConstraint) // pickup second
-                .strafeToSplineHeading(new Vector2d(-25.8088,-29.92), Math.toRadians(-126)) // pickup second
-                ;
-
-        TrajectoryActionBuilder five = four.endTrajectory().fresh()
-                .strafeToSplineHeading(new Vector2d(-11.22, -40.92),Math.toRadians(130)) // deliver second sample
-                ;
-
-        TrajectoryActionBuilder six = five.endTrajectory().fresh()
-                .strafeToLinearHeading(new Vector2d(-28.8088, -40.7), Math.toRadians(-126)) // pickup third
-                ;
-
-        TrajectoryActionBuilder seven = six.endTrajectory().fresh()
-                .strafeToSplineHeading(new Vector2d(-11.22, -40.92),Math.toRadians(130)) // deliver third sample
-                ;
-
-//        TrajectoryActionBuilder eight = seven.endTrajectory().fresh()
-//                .strafeToLinearHeading(new Vector2d(-50, -23.73),Math.toRadians(90))
-//                .strafeToLinearHeading(new Vector2d(-50, -14.25),Math.toRadians(90))
-//                ;
-
-        TrajectoryActionBuilder eight = seven.endTrajectory().fresh()
+                .strafeToSplineHeading((new Vector2d(-11.22, -40.92)), Math.toRadians(130))
+                .stopAndAdd(robot.outtake())
+                .stopAndAdd(robot.goToIntake())
+                .stopAndAdd(robot.setIntakeRotate(.4))
+                .stopAndAdd(robot.startIntakeSlow())
+                .turnTo(Math.toRadians(-126))
+                .strafeToSplineHeading(new Vector2d(-25.3088,-18.32), Math.toRadians(-126)) // go to first sample
+                .stopAndAdd(robot.startIntakeSlow())
+                .stopAndAdd(robot.extendSlidesPowerFirst(-18000, -0.8))
+                .stopAndAdd(robot.stopIntake())
+                .stopAndAdd(robot.retractSlidesPower(-8000,1, false))
+                .stopAndAdd(robot.setIntakeRotate(0))
+                .afterTime(0, robot.goToHighGoal())
+                .turnTo(Math.toRadians(135))
+                .strafeToLinearHeading(new Vector2d(-14.53, -44.74), Math.toRadians(135)) // deliver first sample
+                .stopAndAdd(robot.goToHighGoal())
+                .stopAndAdd(robot.setIntakeRotate(FirstTeleOp.intakeRotateScore))
+                .stopAndAdd(robot.outtake())
+                .stopAndAdd(robot.goToIntake())
+                .strafeToSplineHeading(new Vector2d(-26.8088,-29.92), Math.toRadians(-126)) // pickup second
+                .stopAndAdd(robot.startIntake())
+                .stopAndAdd(robot.extendSlidesPower(-19000, -0.8, true))
+                .stopAndAdd(robot.stopIntake())
+                .stopAndAdd(robot.retractSlidesPower(-8000,1, false))
+                .stopAndAdd(robot.setIntakeRotate(0))
+                .afterTime(0,robot.goToHighGoal())
+                .strafeToSplineHeading(new Vector2d(-14.53, -44.74),Math.toRadians(135)) // deliver second sample
+                .stopAndAdd(robot.goToHighGoal())
+                .stopAndAdd(robot.setIntakeRotate(FirstTeleOp.intakeRotateScore))
+                .stopAndAdd(robot.outtake())
+                .stopAndAdd(robot.goToIntake())
+                .stopAndAdd(robot.setIntakeRotate(0.1))
+                .strafeToLinearHeading(new Vector2d(-29.8088, -40.7), Math.toRadians(-126)) // pickup third
+                .stopAndAdd(robot.startIntake())
+                .stopAndAdd(robot.extendSlidesPower(-15500, -0.8, true))
+                .stopAndAdd(robot.stopIntake())
+                .stopAndAdd(robot.retractSlidesPower(-8000,1, false))
+                .stopAndAdd(robot.setIntakeRotate(0))
+                .afterTime(0,robot.goToHighGoal())
+                .waitSeconds(0.2)
+                .strafeToSplineHeading(new Vector2d(-14.53, -44.74),Math.toRadians(135)) // deliver third sample
+                .stopAndAdd(robot.goToHighGoal())
+                .stopAndAdd(robot.setIntakeRotate(FirstTeleOp.intakeRotateScore))
+                .stopAndAdd(robot.outtake())
+                .stopAndAdd(robot.goToIntake())
+                .stopAndAdd(robot.setIntakeRotate(0.2))
                 .strafeToLinearHeading(new Vector2d(-30.53, -42.74),Math.toRadians(130)) // intermediate point
-                .strafeToLinearHeading(new Vector2d(-49.327, -14.976), Math.toRadians(113)) // go to submersible
-                ;
-
-        TrajectoryActionBuilder nine = eight.endTrajectory().fresh()
-                .strafeToLinearHeading(new Vector2d(-48, -14.9), Math.toRadians(80)) // change angles for submersible
-                ;
-
-        TrajectoryActionBuilder ten = eight.endTrajectory().fresh()
-                .strafeToLinearHeading(new Vector2d(-50, -20.25),Math.toRadians(80))
-                .strafeToLinearHeading(new Vector2d(-12.53, -42.74),Math.toRadians(130)) // deliver fourth sample
-                ;
-
-        TrajectoryActionBuilder eleven = ten.endTrajectory().fresh()
+                .splineToConstantHeading(new Vector2d(-49.327, -15.676), Math.toRadians(90)) // go to submersible
+                .turnTo(Math.toRadians(90))
+                .stopAndAdd(robot.stopIntake())
+                .stopAndAdd(robot.extendSlidesPower(-10000,-1,false))
+                .stopAndAdd(robot.startIntake())
+                .stopAndAdd(robot.extendSlidesPower(-12000,-0.8,true))
+                .stopAndAdd(robot.retractSlidesPower(-10000,1,false))
+                .stopAndAdd(robot.extendSlidesPower(-22000,-0.8,true))
+                .stopAndAdd(robot.retractSlidesPower(-12000, 1, false))
+                .stopAndAdd(robot.setIntakeRotate(0.2))
+                .stopAndAdd(robot.retractSlidesPower(-8000,1, false))
+                .stopAndAdd(robot.stopIntake())
+                .strafeToLinearHeading(new Vector2d(-50, -20.25),Math.toRadians(90))
+                .afterTime(0, robot.setIntakeRotate(0))
+                .afterTime(0,robot.GoToHighGoalAfter(200))
+                .strafeToLinearHeading(new Vector2d(-14.53, -44.74),Math.toRadians(125))
+                .stopAndAdd(robot.setIntakeRotate(FirstTeleOp.intakeRotateScore))
+                .stopAndAdd(robot.outtake())
+                .stopAndAdd(robot.goToIntake())
+                .stopAndAdd(robot.setIntakeRotate(0.2))
                 .strafeToLinearHeading(new Vector2d(-30.53, -42.74),Math.toRadians(130)) // intermediate point
-                .strafeToLinearHeading(new Vector2d(-49.327, -14.976), Math.toRadians(100)) // go to submersible
+                .strafeToLinearHeading(new Vector2d(-49.327, -15.976), Math.toRadians(110)) // go to submersible
+                .stopAndAdd(robot.stopIntake())
+                .stopAndAdd(robot.extendSlidesPower(-10000,-1,false))
+                .stopAndAdd(robot.startIntake())
+                .stopAndAdd(robot.extendSlidesPower(-12000,-0.8,true))
+                .stopAndAdd(robot.retractSlidesPower(-10000,1,false))
+                .stopAndAdd(robot.extendSlidesPower(-22000,-0.8,true))
+                .stopAndAdd(robot.retractSlidesPower(-12000, 1, false))
+                .stopAndAdd(robot.setIntakeRotate(0.2))
+                .stopAndAdd(robot.retractSlidesPower(-8000,1, false))
+                .stopAndAdd(robot.stopIntake())
+                .strafeToLinearHeading(new Vector2d(-50, -20.25),Math.toRadians(110))
+                .afterTime(0, robot.setIntakeRotate(0))
+                .afterTime(0,robot.GoToHighGoalAfter(200))
+                .strafeToLinearHeading(new Vector2d(-14.53, -44.74),Math.toRadians(125))
+                .stopAndAdd(robot.setIntakeRotate(FirstTeleOp.intakeRotateScore))
+                .stopAndAdd(robot.outtake())
+                .stopAndAdd(robot.goToIntake())
+                .afterTime(5000, robot.setAllZero())
                 ;
 
-//        TrajectoryActionBuilder twelve = eleven.endTrajectory().fresh()
-//                .strafeToLinearHeading(new Vector2d(-48, -14.9), Math.toRadians(70)) //
-//                ;
-
-        TrajectoryActionBuilder thirteen = eleven.endTrajectory().fresh()
-                .strafeToLinearHeading(new Vector2d(-52, -20.25),Math.toRadians(70))
-                .strafeToLinearHeading(new Vector2d(-12.53, -42.74),Math.toRadians(130)) // deliver fifth sample
-                ;
-
-
-
-
+        Action trajOne = one.build();
 
 
         while (!isStopRequested() && !opModeIsActive()) {
             telemetry.update();
         }
-
-        Action trajOne = one.build();
-        Action trajTwoHalf = twohalf.build();
-        Action trajThree = three.build();
-        Action trajFour = four.build();
-        Action trajFive = five.build();
-        Action trajSix = six.build();
-        Action trajSeven = seven.build();
-        Action trajEight = eight.build();
-        Action trajNine = nine.build();
-        Action trajTen = ten.build();
-        Action trajEleven = eleven.build();
-        Action trajThirteen = thirteen.build();
-
         telemetry.update();
         waitForStart();
-
-
         drive.updatePoseEstimate();
         telemetry.addData("x",drive.pose.position.x);
         telemetry.addData("y",drive.pose.position.y);
@@ -157,229 +174,7 @@ public class SamplePreloadAuto extends LinearOpMode {
         telemetry.addData("test",drive.pose.toString());
         telemetry.update();
 
-        Actions.runBlocking(
-                new ParallelAction(
-                        robot.goToHighGoal(),
-                        trajOne
-                )
-        );
-
-        Actions.runBlocking(
-                new SequentialAction(
-                        //robot.goToHighGoalSlides(),
-                        robot.setIntakeRotate(FirstTeleOp.intakeRotateScore),
-                        robot.outtake(),
-                        robot.goToIntake(),
-                        trajTwoHalf
-                )
-        );
-
-        Actions.runBlocking(
-                new SequentialAction(
-                        robot.startIntakeSlow(),
-                        robot.extendSlidesPowerFirst(-18000, -0.65),
-                        robot.stopIntake(),
-                        robot.retractSlidesPower(-8000,1, false),
-                        robot.setIntakeRotate(0)
-                )
-        );
-
-        Actions.runBlocking(
-                new ParallelAction(
-                        robot.goToHighGoal(),
-                        trajThree
-                )
-        );
-
-        Actions.runBlocking(
-                new SequentialAction(
-                        //robot.goToHighGoalSlides(),
-                        robot.setIntakeRotate(FirstTeleOp.intakeRotateScore),
-                        robot.outtake(),
-                        robot.goToIntake(),
-                        trajFour, // pickup second block
-                        robot.startIntake(),
-                        robot.extendSlidesPower(-19000, -0.65, true),
-                        robot.stopIntake(),
-                        robot.retractSlidesPower(-8000,1, false),
-                        robot.setIntakeRotate(0)
-                )
-        );
-
-        Actions.runBlocking(
-                new ParallelAction(
-                        robot.goToHighGoal(),
-                        trajFive
-                )
-        );
-
-        Actions.runBlocking(
-                new SequentialAction(
-                        //robot.goToHighGoalSlides(),
-                        robot.setIntakeRotate(FirstTeleOp.intakeRotateScore),
-                        robot.outtake(),
-                        robot.goToIntake(),
-                        trajSix, // pickup second block
-                        robot.startIntake(),
-                        robot.extendSlidesPower(-13000, -0.8, true),
-                        robot.stopIntake(),
-                        robot.retractSlidesPower(-8000,1, false),
-                        robot.setIntakeRotate(0)
-                )
-        );
-
-        Actions.runBlocking(
-                new ParallelAction(
-                        robot.goToHighGoal(),
-                        trajSeven
-                )
-        );
-
-        Actions.runBlocking(
-                new SequentialAction(
-                        //robot.goToHighGoalSlides(),
-                        robot.setIntakeRotate(FirstTeleOp.intakeRotateScore),
-                        robot.outtake(),
-                        robot.goToIntake()
-                )
-        );
-
-        Actions.runBlocking(
-                new ParallelAction(
-                        trajEight,
-                        robot.stopIntake()
-                )
-        );
-
-        Actions.runBlocking(
-                new SequentialAction(
-                        robot.extendSlidesPower(-10000,-1,false),
-                        robot.startIntake(),
-                        robot.extendSlidesPower(-12000,-0.65,true),
-                        robot.retractSlidesPower(-10000,1,false),
-                        robot.extendSlidesPower(-22000,-0.65,true),
-                        robot.retractSlidesPower(-12000, 1, false),
-//                        trajNine,
-//                        robot.extendSlidesPower(-14000,-0.65,true),
-//                        robot.retractSlidesPower(-13000,1,false),
-//                        robot.extendSlidesPower(-22000,-0.65,true),
-//                        robot.retractSlidesPower(-12000, 1, false),
-                        robot.setIntakeRotate(0.2)
-                )
-        );
-
-        Actions.runBlocking(
-                new SequentialAction(
-                        robot.retractSlidesPower(-8000,1, false),
-                        robot.stopIntake()
-                )
-        );
-
-        Actions.runBlocking(
-                new ParallelAction(
-                        robot.setIntakeRotate(0),
-                        robot.GoToHighGoalAfter(400),
-                        trajTen
-                )
-        );
-
-        Actions.runBlocking(
-                new SequentialAction(
-                        //robot.goToHighGoalSlides(),
-                        robot.setIntakeRotate(FirstTeleOp.intakeRotateScore),
-                        robot.outtake(),
-                        robot.goToIntake()
-                )
-        );
-
-        //
-
-        Actions.runBlocking(
-                new ParallelAction(
-                        trajEleven,
-                        robot.stopIntake()
-                )
-        );
-
-        Actions.runBlocking(
-                new SequentialAction(
-                        robot.extendSlidesPower(-8000,-1,false),
-                        robot.startIntake(),
-                        robot.extendSlidesPower(-10000,-0.65,true),
-                        robot.retractSlidesPower(-8000,1,false),
-                        robot.extendSlidesPower(-22000,-0.65,true),
-                        robot.retractSlidesPower(-12000, 1, false),
-//                        robot.setIntakeRotate(.2),
-//                        robot.retractSlidesPower(-12000, 1, false),
-//                        trajTwelve,
-//                        robot.extendSlidesPower(-22000,-0.65,true),
-                        robot.setIntakeRotate(0.2)
-                )
-        );
-
-        Actions.runBlocking(
-                new SequentialAction(
-                        robot.retractSlidesPower(-8000,1, false),
-                        robot.stopIntake()
-                )
-        );
-
-        Actions.runBlocking(
-                new ParallelAction(
-                        robot.setIntakeRotate(0),
-                        robot.GoToHighGoalAfter(400),
-                        trajThirteen
-                )
-        );
-
-        Actions.runBlocking(
-                new SequentialAction(
-                        //robot.goToHighGoalSlides(),
-                        robot.setIntakeRotate(FirstTeleOp.intakeRotateScore),
-                        robot.outtake(),
-                        robot.goToIntake(),
-                        robot.setAllZero()
-                )
-        );
-
-
-
-
-
-
-
-/*
-       Actions.runBlocking(
-               new SequentialAction(
-                       robot.startIntake(), // start intake
-                       robot.extendSlidesPower(-13000, -0.4),
-                       robot.extendSlidesPower(-16000, -0.35),
-                       robot.stopIntake(),
-                       trajThree, // deliver first block
-                       robot.extendSlidesPower(-16000, -1),
-                       robot.outtake(),
-                       robot.retractSlidesPower(-13000, 1),
-                       trajFour, // pickup second block
-                       robot.startIntake(),
-                       robot.extendSlidesPower(-15000, -0.4),
-                       robot.stopIntake(),
-                       trajFive, // deliver second block
-                       robot.outtake(),
-                       robot.retractSlidesPower(-13000, 1),
-                       trajSix, // pickup third block
-                       robot.startIntake(),
-                       robot.extendSlidesPower(-15000, -0.4),
-                       robot.stopIntake(),
-                       robot.retractSlidesPower(-13000, 1),
-                       trajSeven, // deliver third block
-                       robot.extendSlidesPower(-15000, -1),
-                       robot.outtake(),
-                       robot.retractSlidesPower(-200, 1)
-               )
-       );
-
- */
-
+        Actions.runBlocking(trajOne);
 
         while(opModeIsActive())
         {
@@ -401,53 +196,39 @@ public class SamplePreloadAuto extends LinearOpMode {
 
     public class ScoreSystem
     {
-        private DcMotorEx slideLeft1 = null;
-        private DcMotorEx slideLeft2 = null;
-        private DcMotorEx slideRight = null;
-        private DcMotorEx pivot = null;
+        private DcMotorEx slideLeft1;
+        private DcMotorEx slideLeft2;
+        private DcMotorEx slideRight;
+        private DcMotorEx pivot;
 
-        private DcMotor backRight = null;
-        private DcMotor backLeft = null;
+        private DcMotor backRight;
+        private DcMotor backLeft;
 
-        private CRServo intake = null;
-        private Servo intakeRotate = null;
+        private CRServo intake;
+        private Servo intakeRotate;
 
-        private DigitalChannel limitSwitch = null;
+        private DigitalChannel limitSwitch;
 
         // Pivot PID stuff
-        double pivotIntegralSum = 0;
-        public double Kp = 0.002;
-        public double Ki = 0;
-        public double Kd = 0;
-        public double Kf = 0.2;
-        ElapsedTime pivotTimer = new ElapsedTime();
-        public double pivotLastError = 0;
+        public double PivotUpKp = 0.002;
+        public double PivotUpKf = 0.2;
 
-        // Slide PID DOWN
-        double downSlideIntegralSum = 0;
-        public double downSlideKp = 0.0001;
-        public double downSlideKi = 0;
-        public double downSlideKd = 0;
-        ElapsedTime downSlideTimer = new ElapsedTime();
-        public double downSlideLastError = 0;
+        public double PivotDownKp = 0.0005;
+        public double PivotDownKf = 0.07;
 
         // Slide PID UP
         double upSlideIntegralSum = 0;
-        public double upSlideKp = 0.0001;
         public double upSlideKi = 0;
         public double upSlideKd = 0;
-        public double upSlideKf = -0.2;
         ElapsedTime upSlideTimer = new ElapsedTime();
         public double upSlideLastError = 0;
 
-        public int slidesHigh = -26000;
-        public int pivotScore = 800;
-        public double intakeRotateScore = 0.35;
+        // Slide PID DOWN
+        public double downSlideKp = 0.0003;
 
-        public int pivotSpecimen = 500;
-        public double rotatePosSpecimen = 0.3;
-        public int slidesTargetSpecimen = -8000;
-        public int slidesTargetSpecimenAfter = -15000;
+        // Slide PID UP
+        public double upSlideKp = 0.0003;
+        public double upSlideKf = -0.1;
 
 
         public ScoreSystem(HardwareMap hardwareMap)
@@ -492,31 +273,20 @@ public class SamplePreloadAuto extends LinearOpMode {
 
         }
 
-        public double PivotPIDControl(double reference, double state)
+        public double PivotDownPIDControl(double reference, double state)
         {
             double error = reference - state;
-            pivotIntegralSum += error * pivotTimer.seconds();
-            double derivative = (error - pivotLastError) / pivotTimer.seconds();
-            pivotLastError = error;
 
-            pivotTimer.reset();
-
-            double output = (error*Kp) + (derivative*Kd) + (pivotIntegralSum*Ki);
-            return output+Kf;
+            double output = (error*PivotDownKp);
+            return output+PivotDownKf;
 
         }
 
-        public double SlideDownPIDControl(double reference, double state)
+        public double PivotUpPIDControl(double reference, double state)
         {
             double error = reference - state;
-            downSlideIntegralSum += error * downSlideTimer.seconds();
-            double derivative = (error - downSlideLastError) / downSlideTimer.seconds();
-            downSlideLastError = error;
 
-            downSlideTimer.reset();
-
-            double output = (error*downSlideKp) + (derivative*downSlideKd) + (downSlideIntegralSum*downSlideKi);
-            return output;
+            return (error*PivotUpKp) + PivotUpKf;
 
         }
 
@@ -537,33 +307,6 @@ public class SamplePreloadAuto extends LinearOpMode {
         public int getSlidesPosition()
         {
             return backLeft.getCurrentPosition();
-        }
-
-        public class Intake implements Action
-        {
-            private ElapsedTime timer = null;
-            private boolean initialized = false;
-            public boolean run(@NonNull TelemetryPacket packet) {
-                if(!initialized)
-                {
-                    timer = new ElapsedTime();
-                    initialized = true;
-                }
-                intakeRotate.setPosition((1.184 * Math.pow(10, -10)) * (Math.pow(getSlidesPosition(), 2)) + (7.237 * Math.pow(10, -8)) * getSlidesPosition() + 0.055);
-                intake.setPower(1);
-                if(timer.milliseconds() < 800) {
-                    return true;
-                }
-                else {
-                    intake.setPower(0);
-                    return false;
-                }
-            }
-        }
-
-        public Action intake()
-        {
-            return new Intake();
         }
 
         public class startIntake implements Action {
@@ -605,7 +348,7 @@ public class SamplePreloadAuto extends LinearOpMode {
                     initialized = true;
                 }
 
-                if(timer.milliseconds() < 500)
+                if(timer.milliseconds() < 250)
                     return true;
                 else {
                     intake.setPower(0);
@@ -722,7 +465,7 @@ public class SamplePreloadAuto extends LinearOpMode {
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
                 if(backRight.getCurrentPosition() < 800)
                 {
-                    pivot.setPower(PivotPIDControl(800,backRight.getCurrentPosition()));
+                    pivot.setPower(PivotUpPIDControl(800,backRight.getCurrentPosition()));
                     return true;
                 }
                 else
@@ -744,7 +487,7 @@ public class SamplePreloadAuto extends LinearOpMode {
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
                 if(backRight.getCurrentPosition() > 100)
                 {
-                    pivot.setPower(PivotPIDControl(0,backRight.getCurrentPosition()));
+                    pivot.setPower(PivotDownPIDControl(0,backRight.getCurrentPosition()));
                     return true;
                 }
                 else
@@ -794,26 +537,12 @@ public class SamplePreloadAuto extends LinearOpMode {
             return new startIntakeSlow();
         }
 
-        public class startOuttake implements Action
-        {
-            @Override
-            public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-                intake.setPower(-.1);
-                return false;
-            }
-        }
-
-        public Action startOuttake()
-        {
-            return new startOuttake();
-        }
-
         public class SetPivotPower implements Action
         {
             private double p;
             public SetPivotPower(double p)
             {
-               this.p = p;
+                this.p = p;
             }
             @Override
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
@@ -827,30 +556,11 @@ public class SamplePreloadAuto extends LinearOpMode {
             return new SetPivotPower(p);
         }
 
-        public class setSlidesPowerX implements Action
-        {
-            private double p;
-            public setSlidesPowerX(double p)
-            {
-                this.p = p;
-            }
-            @Override
-            public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-                setSlidePower(p);
-                return false;
-            }
-        }
-
-        public Action setSlidesPowerX(double p)
-        {
-            return new setSlidesPowerX(p);
-        }
-
         public class goToHighGoal implements Action
         {
             @Override
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-                pivot.setPower(PivotPIDControl(FirstTeleOp.pivotScore, backRight.getCurrentPosition()));
+                pivot.setPower(PivotUpPIDControl(FirstTeleOp.pivotScore, backRight.getCurrentPosition()));
 
                 if(backRight.getCurrentPosition() > 800) {
                     //setSlidePower(SlideUpPIDControl(-27000, getSlidesPosition()));
@@ -858,12 +568,13 @@ public class SamplePreloadAuto extends LinearOpMode {
                     if(getSlidesPosition() < -27000) {
                         setSlidePower(-.2);
                         pivot.setPower(.2);
+                        intakeRotate.setPosition(FirstTeleOp.intakeRotateScore);
                         return false;
                     }
-                    else if(getSlidesPosition() < -15000 && getSlidesPosition() > -27000) {
-                        intakeRotate.setPosition(FirstTeleOp.intakeRotateScore);
-                        return true;
-                    }
+//                    else if(getSlidesPosition() < -24000 && getSlidesPosition() > -27000) {
+//                        intakeRotate.setPosition(FirstTeleOp.intakeRotateScore);
+//                        return true;
+//                    }
                     else
                         return true;
                 }
@@ -900,7 +611,7 @@ public class SamplePreloadAuto extends LinearOpMode {
                     return false;
                 }
                 else {
-                    pivot.setPower(PivotPIDControl(20, backRight.getCurrentPosition()));
+                    pivot.setPower(PivotDownPIDControl(20, backRight.getCurrentPosition()));
                     setSlidePower(SlideUpPIDControl(-200, getSlidesPosition()));
                     return false;
                 }
@@ -987,7 +698,7 @@ public class SamplePreloadAuto extends LinearOpMode {
                 }
 
                 else {
-                    pivot.setPower(PivotPIDControl(FirstTeleOp.pivotScore, backRight.getCurrentPosition()));
+                    pivot.setPower(PivotUpPIDControl(FirstTeleOp.pivotScore, backRight.getCurrentPosition()));
 
                     if(backRight.getCurrentPosition() > 600) {
                         //setSlidePower(SlideUpPIDControl(-27000, getSlidesPosition()));
@@ -997,10 +708,6 @@ public class SamplePreloadAuto extends LinearOpMode {
                             pivot.setPower(.2);
                             return false;
                         }
-//                        else if(getSlidesPosition() < -15000 && getSlidesPosition() > -26000) {
-//                            intakeRotate.setPosition(FirstTeleOp.intakeRotateScore);
-//                            return true;
-//                        }
                         else {
                             return true;
                         }
@@ -1015,5 +722,34 @@ public class SamplePreloadAuto extends LinearOpMode {
         {
             return new GoToHighGoalAfter(ms);
         }
+
+        public class Pause implements Action {
+            private int ms;
+            private ElapsedTime timer = null;
+            private boolean initialized = false;
+
+            public Pause(int ms) {
+                this.ms = ms;
+            }
+
+            public boolean run(@NonNull TelemetryPacket packet) {
+                if (!initialized) {
+                    timer = new ElapsedTime();
+                    initialized = true;
+                }
+
+                if (timer.milliseconds() < ms) {
+                    return true;
+                }
+                else
+                    return false;
+            }
+        }
+
+        public Action pause(int ms)
+        {
+            return new Pause(ms);
+        }
     }
 }
+
