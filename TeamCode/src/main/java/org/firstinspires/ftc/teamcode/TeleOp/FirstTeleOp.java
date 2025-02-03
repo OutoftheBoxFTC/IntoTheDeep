@@ -133,12 +133,13 @@ public class FirstTeleOp extends OpMode
     public static double highGear =1;
 
 
-    public static int maxExtension = -22000;
+    public static int maxExtension = -14000;
 
-    public double wristError = 0;
+    public static double wristError = 0;
 
     public boolean switchedToHigh = false;
     public boolean switchedToIntake = false;
+    public boolean hung = false;
 
     /*
      * Code to run ONCE when the driver hits INIT
@@ -220,7 +221,7 @@ public class FirstTeleOp extends OpMode
     public void loop() {
 
 
-        if (limitSwitch.getState() && !pressedLast && runtime.seconds() > 2 && (!IntakeState && !(gamepad1.right_trigger > 0.1)))
+        if (limitSwitch.getState() && !pressedLast && runtime.seconds() > 2)
         {
             error = backLeft.getCurrentPosition();
             pressedLast = true;
@@ -307,6 +308,8 @@ public class FirstTeleOp extends OpMode
         if(!hangState && !overrideSlides) {
             if (backRight.getCurrentPosition() > 500)
                 setSlidePower(SlideUpPIDControl(slidesTarget, getSlidesPosition()));
+            else if(IntakeState && gamepad1.right_bumper && slidesTarget < maxExtension+1000)
+                setSlidePower(SlideDownPIDControl(slidesTarget-2500, getSlidesPosition()));
             else {
                 setSlidePower(SlideDownPIDControl(slidesTarget, getSlidesPosition()));
             }
@@ -335,7 +338,7 @@ public class FirstTeleOp extends OpMode
             if(backRight.getCurrentPosition() > 740)
             {
                 slidesTarget = (int) (63.265*backRight.getCurrentPosition() - 81106.12);
-                intakeRotatePos = -0.00306122*backRight.getCurrentPosition() +2.92449;
+                intakeRotatePos = -0.00306122*backRight.getCurrentPosition() +3.02449;
             }
             else if (backRight.getCurrentPosition() > 500 && backRight.getCurrentPosition() < 740){
                 slidesTarget = slidesHigh;
@@ -409,8 +412,9 @@ public class FirstTeleOp extends OpMode
             if(gamepad1.right_bumper)
             {
                 intake.setPower(1);
-                intakeRotatePos = (1.184*Math.pow(10,-10))*(Math.pow(getSlidesPosition(),2)) + (7.237*Math.pow(10,-8))*getSlidesPosition()+0.040+wristError; // negative goes down
-                //intakeRotatePos = (4.6583*Math.pow(10,-11))*Math.pow(getSlidesPosition(),2) + 8.51223*Math.pow(10,-7)*getSlidesPosition() + 0.035;
+                intakeRotatePos = (1.184*Math.pow(10,-10))*(Math.pow(getSlidesPosition(),2)) + (7.237*Math.pow(10,-8))*getSlidesPosition()+0.06+wristError; // negative goes down
+                //intakeRotatePos = (4.6583*Math.pow(10,-11))*Math.pow(getSlidesPosition(),2) + 8.51223*Math.pow(10,-7)*getSlidesPosition() + 0.040;
+
             }
             else if(gamepad1.x)
             {
@@ -499,20 +503,30 @@ public class FirstTeleOp extends OpMode
         if(hangState)
         {
             pivotTarget = pivotScore;
+            pivot.setPower(PivotUpPIDControl(pivotTarget,backRight.getCurrentPosition()));
             intakeRotatePos = 0;
             gearshift.setPosition(lowGear);
             if(gearpos.getVoltage() > 1.2 && gearpos.getVoltage() < 1.38)
             {
                 setSlidePower(-.4);
             }
-            else {
-                if (gamepad2.right_trigger > 0.1 && getSlidesPosition() < 0) {
-                    setSlidePower(-1);
-                } else if (gamepad2.left_trigger > 0.1 && getSlidesPosition() > -26000) {
+            else if(!hung) {
+                if (gamepad2.right_trigger > 0.1) {
                     setSlidePower(1);
+                } else if (gamepad2.left_trigger > 0.1 && getSlidesPosition() > -26000) {
+                    setSlidePower(-1);
                 } else {
                     setSlidePower(0);
                 }
+            }
+            else if(hung)
+            {
+                setSlidePower(1);
+            }
+
+            if(gamepad2.dpad_down)
+            {
+                hung = true;
             }
 
         }

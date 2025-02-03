@@ -16,6 +16,7 @@ import com.acmerobotics.roadrunner.Vector2d;
 import com.acmerobotics.roadrunner.VelConstraint;
 import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.CRServo;
@@ -32,6 +33,7 @@ import org.firstinspires.ftc.teamcode.TeleOp.FirstTeleOp;
 
 import java.util.Arrays;
 
+@Disabled
 @Config
 @Autonomous(name = "testlol", group = "Autonomous")
 public class Test extends LinearOpMode {

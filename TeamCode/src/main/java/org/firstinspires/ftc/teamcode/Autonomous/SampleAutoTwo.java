@@ -75,7 +75,7 @@ public class SampleAutoTwo extends LinearOpMode {
                 .waitSeconds(0.2)
                 .strafeTo(new Vector2d(-16.26, 0))
                 .afterTime(0, robot.movePivotDown())
-                .strafeToSplineHeading(new Vector2d(-24.3088,-18.32), Math.toRadians(-126)) // go to first sample
+                .strafeToSplineHeading(new Vector2d(-25.3088,-18.32), Math.toRadians(-126)) // go to first sample
                 .stopAndAdd(robot.startIntakeSlow())
                 .stopAndAdd(robot.extendSlidesPowerFirst(-18000, -0.8))
                 .stopAndAdd(robot.stopIntake())
@@ -88,35 +88,35 @@ public class SampleAutoTwo extends LinearOpMode {
                 .stopAndAdd(robot.setIntakeRotate(FirstTeleOp.intakeRotateScore))
                 .stopAndAdd(robot.outtake())
                 .stopAndAdd(robot.goToIntake())
-                .strafeToSplineHeading(new Vector2d(-26.8088,-29.92), Math.toRadians(-126)) // pickup second
+                .strafeToSplineHeading(new Vector2d(-29.8088,-29.92), Math.toRadians(-120)) // pickup second
                 .stopAndAdd(robot.startIntake())
                 .stopAndAdd(robot.extendSlidesPower(-19000, -0.8, true))
                 .stopAndAdd(robot.stopIntake())
                 .stopAndAdd(robot.retractSlidesPower(-8000,1, false))
                 .stopAndAdd(robot.setIntakeRotate(0))
                 .afterTime(0,robot.goToHighGoal())
-                .strafeToSplineHeading(new Vector2d(-14.53, -44.74),Math.toRadians(135)) // deliver second sample
+                .strafeToSplineHeading(new Vector2d(-15.53, -45.74),Math.toRadians(135)) // deliver second sample
                 .stopAndAdd(robot.goToHighGoal())
                 .stopAndAdd(robot.setIntakeRotate(FirstTeleOp.intakeRotateScore))
                 .stopAndAdd(robot.outtake())
                 .stopAndAdd(robot.goToIntake())
                 .stopAndAdd(robot.setIntakeRotate(0.1))
-                .strafeToLinearHeading(new Vector2d(-29.8088, -40.7), Math.toRadians(-126)) // pickup third
+                .strafeToLinearHeading(new Vector2d(-31.8088, -40.7), Math.toRadians(-117)) // pickup third
                 .stopAndAdd(robot.startIntake())
-                .stopAndAdd(robot.extendSlidesPower(-15500, -0.8, true))
+                .stopAndAdd(robot.extendSlidesPower(-14500, -0.8, true))
                 .stopAndAdd(robot.stopIntake())
                 .stopAndAdd(robot.retractSlidesPower(-8000,1, false))
                 .stopAndAdd(robot.setIntakeRotate(0))
                 .afterTime(0,robot.goToHighGoal())
                 .waitSeconds(0.2)
-                .strafeToSplineHeading(new Vector2d(-14.53, -44.74),Math.toRadians(135)) // deliver third sample
+                .strafeToSplineHeading(new Vector2d(-15.53, -45.74),Math.toRadians(135)) // deliver third sample
                 .stopAndAdd(robot.goToHighGoal())
                 .stopAndAdd(robot.setIntakeRotate(FirstTeleOp.intakeRotateScore))
                 .stopAndAdd(robot.outtake())
                 .stopAndAdd(robot.goToIntake())
                 .stopAndAdd(robot.setIntakeRotate(0.2))
                 .strafeToLinearHeading(new Vector2d(-30.53, -42.74),Math.toRadians(130)) // intermediate point
-                .splineToConstantHeading(new Vector2d(-49.327, -15.676), Math.toRadians(90)) // go to submersible
+                .splineToConstantHeading(new Vector2d(-49.327, -16.676), Math.toRadians(90)) // go to submersible
                 .turnTo(Math.toRadians(90))
                 .stopAndAdd(robot.stopIntake())
                 .stopAndAdd(robot.extendSlidesPower(-10000,-1,false))
@@ -131,13 +131,13 @@ public class SampleAutoTwo extends LinearOpMode {
                 .strafeToLinearHeading(new Vector2d(-50, -20.25),Math.toRadians(90))
                 .afterTime(0, robot.setIntakeRotate(0))
                 .afterTime(0,robot.GoToHighGoalAfter(200))
-                .strafeToLinearHeading(new Vector2d(-14.53, -44.74),Math.toRadians(125))
+                .strafeToLinearHeading(new Vector2d(-15.53, -45.74),Math.toRadians(125))
                 .stopAndAdd(robot.setIntakeRotate(FirstTeleOp.intakeRotateScore))
                 .stopAndAdd(robot.outtake())
                 .stopAndAdd(robot.goToIntake())
                 .stopAndAdd(robot.setIntakeRotate(0.2))
                 .strafeToLinearHeading(new Vector2d(-30.53, -42.74),Math.toRadians(130)) // intermediate point
-                .strafeToLinearHeading(new Vector2d(-49.327, -15.976), Math.toRadians(110)) // go to submersible
+                .strafeToLinearHeading(new Vector2d(-51.327, -15.976), Math.toRadians(110)) // go to submersible
                 .stopAndAdd(robot.stopIntake())
                 .stopAndAdd(robot.extendSlidesPower(-10000,-1,false))
                 .stopAndAdd(robot.startIntake())
@@ -151,7 +151,7 @@ public class SampleAutoTwo extends LinearOpMode {
                 .strafeToLinearHeading(new Vector2d(-50, -20.25),Math.toRadians(110))
                 .afterTime(0, robot.setIntakeRotate(0))
                 .afterTime(0,robot.GoToHighGoalAfter(200))
-                .strafeToLinearHeading(new Vector2d(-14.53, -44.74),Math.toRadians(125))
+                .strafeToLinearHeading(new Vector2d(-16.53, -46.74),Math.toRadians(125))
                 .stopAndAdd(robot.setIntakeRotate(FirstTeleOp.intakeRotateScore))
                 .stopAndAdd(robot.outtake())
                 .stopAndAdd(robot.pause(500))
@@ -418,7 +418,7 @@ public class SampleAutoTwo extends LinearOpMode {
                 if(backLeft.getCurrentPosition() > target && !(timer.milliseconds() > 1500))
                 {
                     if(intake)
-                        intakeRotate.setPosition((1.184*Math.pow(10,-10))*(Math.pow(getSlidesPosition(),2)) + (7.237*Math.pow(10,-8))*getSlidesPosition()+0.040);
+                        intakeRotate.setPosition((1.184*Math.pow(10,-10))*(Math.pow(getSlidesPosition(),2)) + (7.237*Math.pow(10,-8))*getSlidesPosition()+0.050);
                     setSlidePower(power);
                     return true;
                 }
@@ -449,7 +449,7 @@ public class SampleAutoTwo extends LinearOpMode {
             @Override
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
                 if(intake)
-                    intakeRotate.setPosition((1.184*Math.pow(10,-10))*(Math.pow(getSlidesPosition(),2)) + (7.237*Math.pow(10,-8))*getSlidesPosition()+0.040);
+                    intakeRotate.setPosition((1.184*Math.pow(10,-10))*(Math.pow(getSlidesPosition(),2)) + (7.237*Math.pow(10,-8))*getSlidesPosition()+0.050);
                 if(backLeft.getCurrentPosition() < target)
                 {
                     setSlidePower(power);

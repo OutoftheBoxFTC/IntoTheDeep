@@ -18,6 +18,7 @@ import com.acmerobotics.roadrunner.Vector2d;
 import com.acmerobotics.roadrunner.VelConstraint;
 import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -33,6 +34,7 @@ import org.firstinspires.ftc.teamcode.TeleOp.FirstTeleOp;
 
 import java.util.Arrays;
 
+@Disabled
 @Config
 @Autonomous(name = "SampleAuto", group = "Autonomous")
 public class SampleAuto extends LinearOpMode {
@@ -65,7 +67,7 @@ public class SampleAuto extends LinearOpMode {
                 ;
 
         TrajectoryActionBuilder twohalf = two.endTrajectory().fresh()
-                .strafeToSplineHeading(new Vector2d(-25.3088,-18.32), Math.toRadians(-126)) // go to first sample
+                .strafeToSplineHeading(new Vector2d(-24.3088,-18.32), Math.toRadians(-126)) // go to first sample
                 ;
 
 
@@ -76,7 +78,7 @@ public class SampleAuto extends LinearOpMode {
 
         TrajectoryActionBuilder four = three.endTrajectory().fresh()
                 //.strafeToLinearHeading(new Vector2d(-35.40,-30.61), Math.toRadians(-91), baseVelConstraint, baseAccelConstraint) // pickup second
-                .strafeToSplineHeading(new Vector2d(-25.8088,-29.92), Math.toRadians(-126)) // pickup second
+                .strafeToSplineHeading(new Vector2d(-24.8088,-29.92), Math.toRadians(-126)) // pickup second
                 ;
 
         TrajectoryActionBuilder five = four.endTrajectory().fresh()
@@ -84,7 +86,7 @@ public class SampleAuto extends LinearOpMode {
                 ;
 
         TrajectoryActionBuilder six = five.endTrajectory().fresh()
-                .strafeToLinearHeading(new Vector2d(-28.8088, -40.7), Math.toRadians(-126)) // pickup third
+                .strafeToLinearHeading(new Vector2d(-27.8088, -40.7), Math.toRadians(-126)) // pickup third
                 ;
 
         TrajectoryActionBuilder seven = six.endTrajectory().fresh()
@@ -109,7 +111,7 @@ public class SampleAuto extends LinearOpMode {
 
         TrajectoryActionBuilder eleven = ten.endTrajectory().fresh()
                 .strafeToLinearHeading(new Vector2d(-30.53, -42.74),Math.toRadians(130)) // intermediate point
-                .strafeToLinearHeading(new Vector2d(-49.327, -14.976), Math.toRadians(100)) // go to submersible
+                .strafeToLinearHeading(new Vector2d(-49.327, -15.976), Math.toRadians(100)) // go to submersible
                 ;
 
         TrajectoryActionBuilder thirteen = eleven.endTrajectory().fresh()
