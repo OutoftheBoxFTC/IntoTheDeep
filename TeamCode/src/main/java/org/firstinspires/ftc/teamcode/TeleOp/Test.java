@@ -105,6 +105,9 @@ public class Test extends OpMode
     private Servo intakeRotate = null;
     private Servo gearshift = null;
 
+    private Servo specPivot = null;
+    private Servo specWrist = null;
+    private Servo specClaw = null;
     private AnalogInput canandgyro = null;
 
     private AnalogInput gearpos = null;
@@ -116,6 +119,9 @@ public class Test extends OpMode
 
 
     public static double intakeRotatePos = 0;
+    public static double specClawPos = 0;
+    public static double specWristPos = 0;
+    public static double specPivotPos = 0;
 
     FtcDashboard dashboard = null;
     Telemetry dashboardTelemetry = null;
@@ -181,6 +187,10 @@ public class Test extends OpMode
         zeroPoint = canandgyro.getVoltage();
 
         intakeRotate = hardwareMap.get(Servo.class, "intakeRotate");
+        specClaw = hardwareMap.get(Servo.class, "specClaw");
+        specPivot = hardwareMap.get(Servo.class, "specPivot");
+        specWrist = hardwareMap.get(Servo.class, "specWrist");
+
 
         // Tell the driver that initialization is complete.
         telemetry.addData("Status", "Initialized");
@@ -224,6 +234,9 @@ public class Test extends OpMode
 //        }
 
         intakeRotate.setPosition(intakeRotatePos);
+        specWrist.setPosition(specWristPos);
+        specPivot.setPosition(specPivotPos);
+        specClaw.setPosition(specClawPos);
 
         telemetry.addData("intakeRotatePos", intakeRotatePos);
         telemetry.addData("slides", backLeft.getCurrentPosition());

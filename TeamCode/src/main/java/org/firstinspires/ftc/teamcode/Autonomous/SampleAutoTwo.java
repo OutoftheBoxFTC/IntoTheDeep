@@ -31,6 +31,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.MecanumDrive;
 import org.firstinspires.ftc.teamcode.TeleOp.FirstTeleOp;
+import org.openftc.easyopencv.OpenCvCamera;
 
 import java.util.Arrays;
 
@@ -75,9 +76,9 @@ public class SampleAutoTwo extends LinearOpMode {
                 .waitSeconds(0.2)
                 .strafeTo(new Vector2d(-16.26, 0))
                 .afterTime(0, robot.movePivotDown())
-                .strafeToSplineHeading(new Vector2d(-25.3088,-18.32), Math.toRadians(-126)) // go to first sample
+                .strafeToSplineHeading(new Vector2d(-24.3088,-18.32), Math.toRadians(-126)) // go to first sample
                 .stopAndAdd(robot.startIntakeSlow())
-                .stopAndAdd(robot.extendSlidesPowerFirst(-18000, -0.8))
+                .stopAndAdd(robot.extendSlidesPower(-18000, -0.75, true, 1500))
                 .stopAndAdd(robot.stopIntake())
                 .stopAndAdd(robot.retractSlidesPower(-8000,1, false))
                 .stopAndAdd(robot.setIntakeRotate(0))
@@ -90,7 +91,7 @@ public class SampleAutoTwo extends LinearOpMode {
                 .stopAndAdd(robot.goToIntake())
                 .strafeToSplineHeading(new Vector2d(-29.8088,-29.92), Math.toRadians(-120)) // pickup second
                 .stopAndAdd(robot.startIntake())
-                .stopAndAdd(robot.extendSlidesPower(-19000, -0.8, true))
+                .stopAndAdd(robot.extendSlidesPower(-19000, -0.75, true, 1500))
                 .stopAndAdd(robot.stopIntake())
                 .stopAndAdd(robot.retractSlidesPower(-8000,1, false))
                 .stopAndAdd(robot.setIntakeRotate(0))
@@ -103,7 +104,7 @@ public class SampleAutoTwo extends LinearOpMode {
                 .stopAndAdd(robot.setIntakeRotate(0.1))
                 .strafeToLinearHeading(new Vector2d(-31.8088, -40.7), Math.toRadians(-117)) // pickup third
                 .stopAndAdd(robot.startIntake())
-                .stopAndAdd(robot.extendSlidesPower(-14500, -0.8, true))
+                .stopAndAdd(robot.extendSlidesPower(-13500, -0.75, true, 750))
                 .stopAndAdd(robot.stopIntake())
                 .stopAndAdd(robot.retractSlidesPower(-8000,1, false))
                 .stopAndAdd(robot.setIntakeRotate(0))
@@ -114,18 +115,18 @@ public class SampleAutoTwo extends LinearOpMode {
                 .stopAndAdd(robot.setIntakeRotate(FirstTeleOp.intakeRotateScore))
                 .stopAndAdd(robot.outtake())
                 .stopAndAdd(robot.goToIntake())
-                .stopAndAdd(robot.setIntakeRotate(0.2))
+                .stopAndAdd(robot.setIntakeRotate(0.4))
                 .strafeToLinearHeading(new Vector2d(-30.53, -42.74),Math.toRadians(130)) // intermediate point
                 .splineToConstantHeading(new Vector2d(-49.327, -16.676), Math.toRadians(90)) // go to submersible
                 .turnTo(Math.toRadians(90))
                 .stopAndAdd(robot.stopIntake())
-                .stopAndAdd(robot.extendSlidesPower(-10000,-1,false))
+                .stopAndAdd(robot.extendSlidesPower(-10000,-1,false, 1500))
                 .stopAndAdd(robot.startIntake())
-                .stopAndAdd(robot.extendSlidesPower(-12000,-0.8,true))
+                .stopAndAdd(robot.extendSlidesPower(-12000,-0.8,true , 1500))
                 .stopAndAdd(robot.retractSlidesPower(-10000,1,false))
-                .stopAndAdd(robot.extendSlidesPower(-22000,-0.8,true))
+                .stopAndAdd(robot.extendSlidesPower(-22000,-0.8,true, 1500))
                 .stopAndAdd(robot.retractSlidesPower(-12000, 1, false))
-                .stopAndAdd(robot.setIntakeRotate(0.2))
+                .stopAndAdd(robot.setIntakeRotate(0.4))
                 .stopAndAdd(robot.retractSlidesPower(-8000,1, false))
                 .stopAndAdd(robot.stopIntake())
                 .strafeToLinearHeading(new Vector2d(-50, -20.25),Math.toRadians(90))
@@ -135,17 +136,17 @@ public class SampleAutoTwo extends LinearOpMode {
                 .stopAndAdd(robot.setIntakeRotate(FirstTeleOp.intakeRotateScore))
                 .stopAndAdd(robot.outtake())
                 .stopAndAdd(robot.goToIntake())
-                .stopAndAdd(robot.setIntakeRotate(0.2))
+                .stopAndAdd(robot.setIntakeRotate(0.4))
                 .strafeToLinearHeading(new Vector2d(-30.53, -42.74),Math.toRadians(130)) // intermediate point
                 .strafeToLinearHeading(new Vector2d(-51.327, -15.976), Math.toRadians(110)) // go to submersible
                 .stopAndAdd(robot.stopIntake())
-                .stopAndAdd(robot.extendSlidesPower(-10000,-1,false))
+                .stopAndAdd(robot.extendSlidesPower(-10000,-1,false, 1500))
                 .stopAndAdd(robot.startIntake())
-                .stopAndAdd(robot.extendSlidesPower(-12000,-0.8,true))
+                .stopAndAdd(robot.extendSlidesPower(-12000,-0.8,true, 1500))
                 .stopAndAdd(robot.retractSlidesPower(-10000,1,false))
-                .stopAndAdd(robot.extendSlidesPower(-22000,-0.8,true))
+                .stopAndAdd(robot.extendSlidesPower(-22000,-0.8,true, 1500))
                 .stopAndAdd(robot.retractSlidesPower(-12000, 1, false))
-                .stopAndAdd(robot.setIntakeRotate(0.2))
+                .stopAndAdd(robot.setIntakeRotate(0.4))
                 .stopAndAdd(robot.retractSlidesPower(-8000,1, false))
                 .stopAndAdd(robot.stopIntake())
                 .strafeToLinearHeading(new Vector2d(-50, -20.25),Math.toRadians(110))
@@ -400,11 +401,13 @@ public class SampleAutoTwo extends LinearOpMode {
             private boolean intake;
             private ElapsedTime timer = null;
             private boolean initialized = false;
-            public extendSlidesPower(int target, double power, boolean intake)
+            private int timeout;
+            public extendSlidesPower(int target, double power, boolean intake, int timeout)
             {
                 this.target = target;
                 this.power = power;
                 this.intake = intake;
+                this.timeout = timeout;
             }
             @Override
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
@@ -415,10 +418,10 @@ public class SampleAutoTwo extends LinearOpMode {
                     initialized = true;
                 }
 
-                if(backLeft.getCurrentPosition() > target && !(timer.milliseconds() > 1500))
+                if(backLeft.getCurrentPosition() > target && !(timer.milliseconds() > timeout))
                 {
                     if(intake)
-                        intakeRotate.setPosition((1.184*Math.pow(10,-10))*(Math.pow(getSlidesPosition(),2)) + (7.237*Math.pow(10,-8))*getSlidesPosition()+0.050);
+                        intakeRotate.setPosition((1.184*Math.pow(10,-10))*(Math.pow(getSlidesPosition(),2)) + (7.237*Math.pow(10,-8))*getSlidesPosition()+0.06);
                     setSlidePower(power);
                     return true;
                 }
@@ -430,9 +433,9 @@ public class SampleAutoTwo extends LinearOpMode {
             }
         }
 
-        public Action extendSlidesPower(int target, double power, boolean intake)
+        public Action extendSlidesPower(int target, double power, boolean intake, int timeout)
         {
-            return new extendSlidesPower(target, power, intake);
+            return new extendSlidesPower(target, power, intake, timeout);
         }
 
 
@@ -449,7 +452,7 @@ public class SampleAutoTwo extends LinearOpMode {
             @Override
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
                 if(intake)
-                    intakeRotate.setPosition((1.184*Math.pow(10,-10))*(Math.pow(getSlidesPosition(),2)) + (7.237*Math.pow(10,-8))*getSlidesPosition()+0.050);
+                    intakeRotate.setPosition((1.184*Math.pow(10,-10))*(Math.pow(getSlidesPosition(),2)) + (7.237*Math.pow(10,-8))*getSlidesPosition()+0.06);
                 if(backLeft.getCurrentPosition() < target)
                 {
                     setSlidePower(power);
@@ -759,6 +762,8 @@ public class SampleAutoTwo extends LinearOpMode {
         {
             return new Pause(ms);
         }
+
+
     }
 }
 

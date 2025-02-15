@@ -582,9 +582,8 @@ public class FirstTeleOp extends OpMode
         telemetry.addData("error",error);
 
         telemetry.addData("voltage canandgyro", canandgyro.getVoltage());
-
-        telemetry.addData("reference",backRight.getCurrentPosition());
-        telemetry.addData("target",pivotTarget);
+        telemetry.addData("limitSwitch", limitSwitch.getState());
+        telemetry.addData("gearPos", gearpos.getVoltage());
 
         telemetry.addData("sl1", slideLeft1.getCurrent(CurrentUnit.AMPS));
         telemetry.addData("sl2", slideLeft2.getCurrent(CurrentUnit.AMPS));
